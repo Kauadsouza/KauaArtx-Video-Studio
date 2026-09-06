@@ -1,4 +1,4 @@
--- Recursos operacionais do Sistema de Vídeos no banco do ARTX Hub.
+-- Recursos operacionais do KauaArtx Video Studio no banco do ARTX Hub.
 -- O histórico é somente do servidor: não é exposto a anon/authenticated.
 
 create table if not exists public.video_revisions (

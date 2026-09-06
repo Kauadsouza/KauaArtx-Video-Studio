@@ -50,7 +50,7 @@ export default function HubAccessBridge() {
     <div className="max-w-sm rounded-2xl border border-line bg-surface p-7 shadow-2xl shadow-black/30">
       <span className="mx-auto mb-4 grid h-11 w-11 place-items-center rounded-xl bg-teal/10 text-xl text-teal ring-1 ring-teal/25">🎬</span>
       <p className="text-xs font-semibold tracking-[0.16em] text-teal">ARTX HUB</p>
-      <h1 className="mt-2 text-lg font-semibold text-ink">Sistema de Vídeos</h1>
+      <h1 className="mt-2 text-lg font-semibold text-ink">KauaArtx Video Studio</h1>
       <p className="mt-2 text-sm leading-6 text-ink-dim">{status}</p>
     </div>
   </main>;

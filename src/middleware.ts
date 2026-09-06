@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { AUTH_COOKIE, isAuthConfigured, verifySessionToken } from "@/lib/auth";
 
 /**
- * O Sistema de Vídeos é aberto pelo ARTX Hub. A rota /embed recebe uma sessão
+ * O KauaArtx Video Studio é aberto pelo ARTX Hub. A rota /embed recebe uma sessão
  * Supabase já validada pelo Hub e cria uma sessão curta para este domínio.
  * Assim não existe uma segunda senha e a URL direta não fica aberta ao público.
  */

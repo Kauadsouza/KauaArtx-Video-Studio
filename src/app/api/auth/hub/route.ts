@@ -9,7 +9,7 @@ type HubUser = { email?: string };
  */
 export async function POST(request: Request) {
   if (!isAuthConfigured()) {
-    return NextResponse.json({ error: "Sessão do Sistema de Vídeos não configurada." }, { status: 503 });
+    return NextResponse.json({ error: "Sessão do KauaArtx Video Studio não configurada." }, { status: 503 });
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
   const user = await userResponse.json() as HubUser;
   if (user.email?.toLowerCase() !== allowedEmail) {
-    return NextResponse.json({ error: "Este Hub não possui acesso ao Sistema de Vídeos." }, { status: 403 });
+    return NextResponse.json({ error: "Este Hub não possui acesso ao KauaArtx Video Studio." }, { status: 403 });
   }
 
   const sessionToken = await issueSessionToken();

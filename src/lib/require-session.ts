@@ -6,6 +6,6 @@ import { AUTH_COOKIE, verifySessionToken } from "./auth";
 export async function requireSession() {
   const store = await cookies();
   if (!await verifySessionToken(store.get(AUTH_COOKIE)?.value)) {
-    throw new Error("Sessão expirada. Abra o Sistema de Vídeos pelo Hub novamente.");
+    throw new Error("Sessão expirada. Abra o KauaArtx Video Studio pelo Hub novamente.");
   }
 }
