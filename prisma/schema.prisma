@@ -1,0 +1,121 @@
+// Sistema de Gestão de Produção de Vídeos — KauaArtx
+// Banco: Postgres (Neon / Vercel Postgres)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+
+  // Conexão do APP: pooler do Supabase (porta 6543, modo transação).
+  // Serverless abre muita conexão curta; o pooler evita estourar o limite.
+  url = env("DATABASE_URL")
+
+  // Conexão das MIGRAÇÕES: direta (porta 5432).
+  // O pooler em modo transação não executa DDL (CREATE TABLE etc.),
+  // então `prisma migrate` precisa falar direto com o banco.
+  directUrl = env("DIRECT_URL")
+}
+
+/// As 8 etapas do fluxo de produção, na ordem.
+/// Enum fixo — não editável pelo usuário (por enquanto).
+enum Stage {
+  IDEIA
+  ROTEIRO
+  GRAVACAO
+  EDICAO
+  THUMBNAIL_TITULO
+  REVISAO
+  AGENDADO
+  POSTADO
+}
+
+/// Estado de um bloco dentro de uma etapa (gravação ou edição).
+enum BlockStatus {
+  PENDENTE
+  EM_PROGRESSO
+  PRONTO
+}
+
+model Video {
+  id             String   @id @default(cuid())
+  title          String
+  description    String   @default("")
+  stage          Stage    @default(IDEIA)
+  /// Posição dentro da coluna (drag-and-drop). Menor = mais em cima.
+  order          Int      @default(0)
+  notes          String   @default("")
+  thumbnailIdea  String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // --- Campos da etapa IDEIA ---------------------------------------------
+  /// O gancho dos primeiros segundos.
+  hook           String   @default("")
+  /// Links/referências de vídeos parecidos (um por linha).
+  references     String   @default("")
+
+  // --- Campos da etapa THUMBNAIL_TITULO ----------------------------------
+  /// Opções de título testadas (uma por linha).
+  titleOptions   String   @default("")
+  /// O título escolhido de fato.
+  finalTitle     String   @default("")
+
+  // --- Campos da etapa REVISAO -------------------------------------------
+  reviewNotes    String   @default("")
+
+  // --- Campos da etapa AGENDADO ------------------------------------------
+  publishAt          DateTime?
+  youtubeDescription String @default("")
+  tags               String @default("")
+
+  // --- Campos da etapa POSTADO -------------------------------------------
+  videoUrl       String   @default("")
+  learnings      String   @default("")
+
+  scriptBlocks   ScriptBlock[]
+  checklistItems ChecklistItem[]
+
+  @@index([stage, order])
+}
+
+/// Roteiro quebrado em pedacinhos de tempo ("0-15s: falo tal coisa").
+///
+/// O bloco é a espinha do sistema: ele nasce na etapa ROTEIRO, vira item de
+/// gravação em GRAVACAO e item de edição em EDICAO. É sempre o mesmo bloco
+/// mudando de estado — não são listas separadas por etapa.
+model ScriptBlock {
+  id           String @id @default(cuid())
+  videoId      String
+  startSeconds Int    @default(0)
+  endSeconds   Int    @default(0)
+  content      String @default("")
+  order        Int    @default(0)
+
+  /// Estado na etapa de gravação.
+  recordingStatus BlockStatus @default(PENDENTE)
+  /// Estado na etapa de edição.
+  editingStatus   BlockStatus @default(PENDENTE)
+  /// Observações do bloco (take que deu errado, corte a fazer, etc.)
+  blockNotes      String      @default("")
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId, order])
+}
+
+/// Item de checklist. Pertence a um vídeo E a uma etapa específica,
+/// então cada vídeo carrega o histórico de checklists de todas as etapas.
+model ChecklistItem {
+  id      String  @id @default(cuid())
+  videoId String
+  stage   Stage
+  text    String
+  done    Boolean @default(false)
+  order   Int     @default(0)
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId, stage, order])
+}

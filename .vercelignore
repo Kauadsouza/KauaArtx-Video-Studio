@@ -1,0 +1,17 @@
+# Nunca suba arquivos de ambiente locais no deploy.
+# As variáveis de produção vivem em Settings → Environment Variables na Vercel.
+.env
+.env.*
+!.env.example
+
+node_modules
+.next
+.claude
+
+.claude
+.env
+.env.*
+node_modules
+.next
+out
+dist

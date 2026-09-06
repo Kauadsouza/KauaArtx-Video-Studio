@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+.studio-overview{max-width:1320px;width:100%;margin:auto;padding:38px 32px 60px}.studio-hero{display:grid;grid-template-columns:1.2fr 1fr;gap:45px;align-items:center}.studio-kicker{display:block;color:#93b7a3;font-size:10px;font-weight:600;letter-spacing:2px;margin-bottom:14px}.studio-hero h1{font-size:clamp(30px,3.5vw,48px);font-weight:650;line-height:1.12;letter-spacing:-1.5px}.studio-hero h1 em{font-style:normal;color:#a9d7b9}.studio-hero p{font-size:14px;color:#a9cbb4;line-height:1.7;margin:18px 0;max-width:460px}.studio-hero a{display:inline-block;font-size:12px;color:#c5e4cf;text-decoration:underline;text-underline-offset:5px}.studio-feature{padding:28px;border:1px solid #50816d;border-radius:20px;background:linear-gradient(135deg,#244b3d,#12312c);min-width:0}.studio-feature>span{font-size:10px;letter-spacing:2px;color:#b7d6c2}.studio-feature small{display:block;margin-top:20px;color:#9bbcaa}.studio-feature h2{font-size:27px;line-height:1.25;margin-top:8px;overflow-wrap:anywhere}.studio-feature button,.studio-form button{background:#b5d9c1;color:#122d24;padding:11px 17px;border-radius:9px;font-weight:600;font-size:12px;cursor:pointer}.studio-stats{display:grid;grid-template-columns:repeat(4,1fr);border-block:1px solid #235347;margin:32px 0;padding:22px 0;gap:20px}.studio-stats strong{display:block;font-size:29px;font-weight:500}.studio-stats span{color:#9bbba8;font-size:11px}.studio-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}.studio-panel{border:1px solid #235347;background:#0b2b2680;padding:25px;border-radius:17px;min-width:0}.studio-panel h2{font-size:22px;font-weight:600;letter-spacing:-.5px}.studio-muted{font-size:12px;color:#9bbba8;margin:10px 0 18px}.studio-row{display:flex;width:100%;gap:15px;align-items:center;justify-content:space-between;padding:17px 0;border-top:1px solid #235347;text-align:left;cursor:pointer}.studio-row>span:first-child{min-width:0}.studio-row small{display:block;font-size:10px;color:#a4cbb5;margin-bottom:5px}.studio-row strong{display:block;font-size:14px;color:#daf1de;font-weight:500;overflow-wrap:anywhere}.studio-row span span{display:block;font-size:11px;color:#9ab9a6;margin-top:5px;white-space:pre-line}.studio-row>span:last-child{color:#9ac2a9;font-size:12px;flex-shrink:0}.studio-empty{padding:25px 0;color:#9bbba8;font-size:13px;line-height:1.7}.studio-form{display:grid;gap:15px;margin-top:20px}.studio-form label{font-size:12px;color:#b2cfbb}.studio-form input,.studio-form textarea{display:block;width:100%;margin-top:7px;border:1px solid #35624f;border-radius:9px;padding:12px;background:#051f20;color:#daf1de;font-size:13px}.studio-form button{justify-self:start}.studio-form button:disabled{opacity:.5}.studio-process{list-style:decimal;padding-left:20px;margin-top:20px}.studio-process li{padding:8px 0;color:#a9cbb4;font-size:13px;line-height:1.75}.studio-process strong{color:#daf1de}.studio-tabs{display:flex;align-items:center;gap:8px;padding:12px 24px;border-top:1px solid #235347}.studio-tabs button{padding:9px 15px;border-radius:8px;font-size:12px;cursor:pointer;color:#a9cbb4}.studio-tabs button[aria-pressed=true]{background:#b5d9c1;color:#122d24}.studio-tabs>span{margin-left:auto;font-size:10px;color:#9bbba8}.studio-error{margin:15px 24px;padding:14px;border:1px solid #ba6970;background:#3b2024;color:#ffced0;border-radius:10px;font-size:13px;display:flex;justify-content:space-between;gap:20px}.studio-shell :is(button,a,input,textarea):focus-visible{outline:2px solid #b4d9c4;outline-offset:3px}.studio-shell header{max-width:100vw}.studio-shell main{min-width:0}.studio-row:hover{background:#12362c80}@media(max-width:800px){.studio-hero,.studio-grid{grid-template-columns:1fr}.studio-overview{padding:25px 18px}.studio-hero{gap:25px}.studio-tabs>span{display:none}.studio-stats{grid-template-columns:repeat(2,1fr)}.studio-panel{padding:21px}.studio-shell header>div:first-child{gap:12px;padding:16px 18px}.studio-hero h1{font-size:36px}}
+
+/* --------------------------------------------------------------------------
+   Tema: dark navy / teal. Ferramenta de produção, não dashboard genérico.
+   Tailwind v4 lê o bloco @theme e gera as utilities (bg-surface, text-ink, …).
+   -------------------------------------------------------------------------- */
+@theme {
+  /* Paleta verde: #051F20 → #0B2B26 → #163832 → #235347 → #8EB69B → #DAF1DE */
+  --color-abyss: #030f10;
+  --color-canvas: #051f20;
+  --color-surface: #0b2b26;
+  --color-surface-2: #163832;
+  --color-line: #235347;
+  --color-line-soft: #17423a;
+
+  --color-ink: #daf1de;
+  --color-ink-dim: #a9cbb4;
+  --color-ink-faint: #6e9682;
+
+  --color-teal: #8eb69b;
+  --color-teal-deep: #235347;
+  --color-amber: #f5b84b;
+  --color-rose: #f87171;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", "Cascadia Code", monospace;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  /* Brilho suave vindo do canto superior esquerdo, como na paleta de referência */
+  background:
+    radial-gradient(
+      1200px 700px at 12% -12%,
+      rgba(218, 241, 222, 0.1),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 88% 4%,
+      rgba(142, 182, 155, 0.07),
+      transparent 55%
+    ),
+    var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbars discretas, combinando com o tema */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #2f6b5b;
+}
+
+/* Inputs herdam o tema por padrão — evita repetir classe em todo campo */
+input,
+textarea,
+select {
+  color: inherit;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-ink-faint);
+}
+
+/* Enquanto arrasta um card, o cursor e a seleção não devem atrapalhar */
+.dragging-active,
+.dragging-active * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+@keyframes kx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes kx-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-fade-in {
+  animation: kx-fade-in 0.15s ease-out;
+}
+.animate-pop-in {
+  animation: kx-pop-in 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
