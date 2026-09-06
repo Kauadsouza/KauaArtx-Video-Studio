@@ -1,4 +1,4 @@
-# Video Production System
+# KauaArtx Video Studio
 
 A private production workspace built for the [@KauaArtx](https://www.youtube.com/@KauaArtx) YouTube channel. It turns an idea into a published video through a clear eight-stage workflow, while keeping scripts, decisions and progress in one place.
 
