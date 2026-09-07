@@ -126,3 +126,23 @@ textarea::placeholder {
 .creator-tip-grid h3 { font-size:18px; font-weight:600; }.creator-tip-grid p { color:var(--color-ink-dim); font-size:14px; line-height:1.65; margin-top:8px; }
 .studio-panel details summary { cursor:pointer; padding:12px 0; }.studio-panel details a { text-decoration:underline; text-underline-offset:4px; }
 @media(max-width:720px) { .creator-tip-grid { grid-template-columns:1fr; }.studio-stage-heading>.studio-stage-art { float:none; width:100%; margin:0 0 18px; } }
+
+.studio-logo{width:36px;height:36px;flex:0 0 auto;border-radius:11px;filter:drop-shadow(0 8px 16px rgba(33,137,101,.28))}
+@media(max-width:640px){
+  html,body{min-height:100dvh;overflow-x:hidden}
+  .studio-shell{min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+  .studio-shell header{position:sticky;z-index:30;top:0;background:rgba(5,31,32,.93)}
+  .studio-shell header>div:first-child{padding:11px 14px}
+  .studio-shell header>div:first-child>div:nth-child(2){order:3;width:100%;margin:0}
+  .studio-shell header>div:first-child>div:last-child{gap:6px}
+  .studio-shell header>div:first-child>div:last-child button{min-height:42px;padding:8px 10px}
+  .studio-tabs{padding:8px 12px;overflow-x:auto;scrollbar-width:none}
+  .studio-tabs button{min-height:42px;white-space:nowrap}
+  .studio-overview{padding:22px 14px 42px}
+  .studio-feature,.studio-panel{padding:18px}
+  .studio-stats{gap:12px}.studio-stats strong{font-size:24px}
+  .studio-shell input,.studio-shell textarea,.studio-shell select{font-size:16px}
+  .studio-row{min-height:60px}
+  .studio-error{margin:10px 14px}
+  .studio-hero h1{font-size:34px}
+}
