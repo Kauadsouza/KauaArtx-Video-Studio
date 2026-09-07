@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { STAGE_COLORS } from "@/lib/stages";
 import { blockProgress, stageProgress, type VideoDTO } from "@/lib/types";
 import { useI18n } from "./I18n";
+import { StageArt } from "./StageArt";
 
 export default function VideoCard({
   video,
@@ -60,7 +61,8 @@ export default function VideoCard({
         isDragging ? "opacity-30" : ""
       } ${overlay ? "cursor-grabbing border-teal/50 shadow-2xl shadow-black/50" : ""}`}
     >
-      <h3 className="text-sm leading-snug font-medium text-ink">
+      <StageArt stage={video.stage} />
+      <h3 className="text-base leading-snug font-medium text-ink">
         {t(video.title)}
       </h3>
 
