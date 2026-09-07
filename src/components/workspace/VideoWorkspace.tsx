@@ -24,6 +24,7 @@ import { stageProgress, type VideoDTO } from "@/lib/types";
 import ChecklistEditor from "@/components/ChecklistEditor";
 import StagePanel from "./StagePanels";
 import { useI18n, LanguageSwitch } from "../I18n";
+import { StageArt } from "../StageArt";
 
 /**
  * Tela cheia de um vídeo.
@@ -134,7 +135,8 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <main className="min-w-0 flex-1 overflow-y-auto px-4 sm:px-8 py-6">
           <div className="mx-auto max-w-3xl">
-            <div className="mb-6">
+            <div className="mb-6 studio-stage-heading">
+              <StageArt stage={viewing} />
               <h2
                 className="flex items-center gap-2 text-base font-semibold"
                 style={{ color }}
