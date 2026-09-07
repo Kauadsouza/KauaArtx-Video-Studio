@@ -10,6 +10,7 @@ import {
 } from "@/actions/videos";
 import { STAGE_COLORS, STAGE_LABELS, type Stage } from "@/lib/stages";
 import type { ChecklistItemDTO } from "@/lib/types";
+import { useI18n } from "./I18n";
 
 /**
  * Checklist da etapa atual do vídeo. Os itens vêm do template da etapa,
@@ -25,6 +26,7 @@ export default function ChecklistEditor({
   stage: Stage;
   items: ChecklistItemDTO[];
 }) {
+  const { t } = useI18n();
   const [, startTransition] = useTransition();
   const [newItem, setNewItem] = useState("");
   const color = STAGE_COLORS[stage];
@@ -42,13 +44,13 @@ export default function ChecklistEditor({
     <section>
       <div className="mb-3 flex items-center gap-2">
         <h3 className="text-sm font-semibold text-ink">
-          Checklist · {STAGE_LABELS[stage]}
+          Checklist · {t(STAGE_LABELS[stage])}
         </h3>
         <span
           className="rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums"
           style={{ background: `${color}1A`, color }}
         >
-          {done}/{items.length}
+          {t(done)}/{t(items.length)}
         </span>
       </div>
 
@@ -137,7 +139,7 @@ export default function ChecklistEditor({
             }
           }}
           onBlur={submitNew}
-          placeholder="adicionar item ao checklist…"
+          placeholder={t("adicionar item ao checklist…")}
           className="flex-1 bg-transparent py-1 text-sm outline-none"
         />
       </div>
@@ -158,20 +160,21 @@ function MiniBtn({
   disabled?: boolean;
   danger?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      title={label}
-      aria-label={label}
+      title={t(label)}
+      aria-label={t(label)}
       className={`flex h-5 w-5 items-center justify-center rounded text-[11px] transition disabled:opacity-20 ${
         danger
           ? "text-ink-faint hover:bg-rose/12 hover:text-rose"
           : "text-ink-faint hover:bg-surface-2 hover:text-ink"
       }`}
     >
-      {children}
+      {t(children)}
     </button>
   );
 }

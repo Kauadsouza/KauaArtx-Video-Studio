@@ -24,8 +24,10 @@ import VideoCard from "./VideoCard";
 import Dashboard from "./Dashboard";
 import StudioOverview from "./StudioOverview";
 import { logout } from "@/actions/auth";
+import { useI18n, LanguageSwitch } from "./I18n";
 
 export default function Board({ initialVideos }: { initialVideos: VideoDTO[] }) {
+  const { t } = useI18n();
   // Cópia local dos vídeos: permite drag-and-drop instantâneo sem esperar
   // o round-trip do servidor. As Server Actions revalidam a página e o
   // useEffect abaixo re-sincroniza com a verdade do banco.
@@ -212,22 +214,22 @@ export default function Board({ initialVideos }: { initialVideos: VideoDTO[] }) 
             <input
               value={query}
               onChange={(e) => { setQuery(e.target.value); if(e.target.value) setView("board"); }}
-              aria-label="Buscar vídeos"
-              placeholder="Buscar título, ideia ou anotação…"
+              aria-label={t("Buscar vídeos")}
+              placeholder={t("Buscar título, ideia ou anotação…")}
               className="w-full rounded-lg border border-line bg-surface py-2 pr-3 pl-8 text-sm outline-none transition focus:border-teal/50 focus:ring-2 focus:ring-teal/15"
             />
             {query && (
               <button
                 onClick={() => setQuery("")}
                 className="absolute top-1/2 right-2 -translate-y-1/2 text-ink-faint transition hover:text-ink"
-                aria-label="Limpar busca"
+                aria-label={t("Limpar busca")}
               >
                 ×
               </button>
             )}
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2"><LanguageSwitch />
             <button
               onClick={() => void downloadBackup()}
               className="rounded-lg border border-line px-3 py-2 text-sm text-ink-dim transition hover:text-ink"
@@ -239,24 +241,22 @@ export default function Board({ initialVideos }: { initialVideos: VideoDTO[] }) 
               disabled={creating}
               className="rounded-lg bg-teal px-3.5 py-2 text-sm font-semibold text-abyss transition hover:bg-teal/90 disabled:opacity-50"
             >
-              {creating ? "Criando…" : "+ Novo vídeo"}
+              {creating ? t("Criando…") : t("+ Novo vídeo")}
             </button>
             <form action={logout}>
               <button
                 type="submit"
                 className="rounded-lg border border-line px-3 py-2 text-sm text-ink-dim transition hover:border-line hover:text-ink"
-                title="Sair"
-              >
-                Sair
-              </button>
+                title={t("Sair")}
+              >{t(" Sair ")}</button>
             </form>
           </div>
         </div>
 
         <Dashboard counts={counts} total={videos.length} />
-        <nav className="studio-tabs" aria-label="Visão do estúdio"><button aria-pressed={view === "studio"} onClick={()=>setView("studio")}>Meu estúdio</button><button aria-pressed={view === "board"} onClick={()=>setView("board")}>Quadro de produção</button><span>{moving ? "Salvando movimento…" : "Seu processo, no seu ritmo."}</span></nav>
+        <nav className="studio-tabs" aria-label={t("Visão do estúdio")}><button aria-pressed={view === "studio"} onClick={()=>setView("studio")}>{t("Meu estúdio")}</button><button aria-pressed={view === "board"} onClick={()=>setView("board")}>{t("Quadro de produção")}</button><span>{moving ? "Salvando movimento…" : t("Seu processo, no seu ritmo.")}</span></nav>
       </header>
-      {error && <div className="studio-error" role="alert">{error}<button onClick={()=>setError("")} aria-label="Fechar aviso">×</button></div>}
+      {error && <div className="studio-error" role="alert">{t(error)}<button onClick={()=>setError("")} aria-label={t("Fechar aviso")}>×</button></div>}
       {view === "studio" ? <StudioOverview videos={videos} onOpen={abrirVideo} creating={creating} onCreate={async(title,description)=>{setError("");try{const id=await createVideo(title,description);abrirVideo(id);return true;}catch{setError("Não foi possível guardar a ideia. O texto continua no formulário para tentar novamente.");return false;}}} /> : <>
 
       {/* ---------------------------------------------------------------- */}
@@ -303,10 +303,8 @@ export default function Board({ initialVideos }: { initialVideos: VideoDTO[] }) 
 
       {videos.length === 0 && (
         <div className="px-6 py-5">
-          <p className="text-sm text-ink-faint">
-            Nenhum vídeo ainda. Clique em{" "}
-            <span className="text-teal">+ Novo vídeo</span> para começar, ou guarde sua primeira ideia na aba Meu estúdio.
-          </p>
+          <p className="text-sm text-ink-faint">{t(" Nenhum vídeo ainda. Clique em")}{" "}
+            <span className="text-teal">{t("+ Novo vídeo")}</span>{t(" para começar, ou guarde sua primeira ideia na aba Meu estúdio. ")}</p>
         </div>
       )}
       </>}

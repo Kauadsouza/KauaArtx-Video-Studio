@@ -10,6 +10,7 @@ import {
 import { formatSeconds } from "@/lib/stages";
 import type { ScriptBlockDTO } from "@/lib/types";
 import AiButton from "./AiButton";
+import { useI18n } from "./I18n";
 
 /**
  * O editor de roteiro "mastigado": o vídeo vira uma lista de blocos de tempo
@@ -24,6 +25,7 @@ export default function ScriptBlockEditor({
   blocks: ScriptBlockDTO[];
   videoTitle: string;
 }) {
+  const { t } = useI18n();
   const [, startTransition] = useTransition();
   const totalSeconds = blocks.reduce(
     (max, b) => Math.max(max, b.endSeconds),
@@ -33,10 +35,10 @@ export default function ScriptBlockEditor({
   return (
     <section>
       <div className="mb-3 flex items-center gap-2">
-        <h3 className="text-sm font-semibold text-ink">Roteiro em blocos</h3>
+        <h3 className="text-sm font-semibold text-ink">{t("Roteiro em blocos")}</h3>
         {blocks.length > 0 && (
           <span className="rounded-md bg-canvas px-1.5 py-0.5 text-[11px] text-ink-faint ring-1 ring-line-soft">
-            {blocks.length} {blocks.length === 1 ? "bloco" : "blocos"} · ~
+            {t(blocks.length)} {blocks.length === 1 ? t("bloco") : t("blocos")} · ~
             {formatSeconds(totalSeconds)}
           </span>
         )}
@@ -48,17 +50,12 @@ export default function ScriptBlockEditor({
           <button
             onClick={() => startTransition(() => addScriptBlock(videoId))}
             className="rounded-md bg-teal/12 px-2.5 py-1 text-[11px] font-semibold text-teal transition hover:bg-teal/20"
-          >
-            + adicionar bloco
-          </button>
+          >{t(" + adicionar bloco ")}</button>
         </div>
       </div>
 
       {blocks.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-line-soft px-3 py-6 text-center text-xs text-ink-faint">
-          Nenhum bloco ainda. Quebre o vídeo em pedaços de tempo — comece pelo
-          gancho de 0 a 15s.
-        </p>
+        <p className="rounded-lg border border-dashed border-line-soft px-3 py-6 text-center text-xs text-ink-faint">{t(" Nenhum bloco ainda. Quebre o vídeo em pedaços de tempo — comece pelo gancho de 0 a 15s. ")}</p>
       ) : (
         <ul className="space-y-2">
           {blocks.map((block, index) => (
@@ -109,7 +106,7 @@ export default function ScriptBlockEditor({
 
                 <div className="ml-auto flex items-center gap-0.5">
                   <IconBtn
-                    label="Mover para cima"
+                    label={t("Mover para cima")}
                     disabled={index === 0}
                     onClick={() =>
                       startTransition(() => moveScriptBlock(block.id, -1))
@@ -118,7 +115,7 @@ export default function ScriptBlockEditor({
                     ↑
                   </IconBtn>
                   <IconBtn
-                    label="Mover para baixo"
+                    label={t("Mover para baixo")}
                     disabled={index === blocks.length - 1}
                     onClick={() =>
                       startTransition(() => moveScriptBlock(block.id, 1))
@@ -170,20 +167,21 @@ function IconBtn({
   disabled?: boolean;
   danger?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      title={label}
-      aria-label={label}
+      title={t(label)}
+      aria-label={t(label)}
       className={`flex h-6 w-6 items-center justify-center rounded text-xs transition disabled:opacity-25 ${
         danger
           ? "text-ink-faint hover:bg-rose/12 hover:text-rose"
           : "text-ink-faint hover:bg-surface-2 hover:text-ink"
       }`}
     >
-      {children}
+      {t(children)}
     </button>
   );
 }

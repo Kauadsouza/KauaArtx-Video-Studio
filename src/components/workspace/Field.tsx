@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { updateVideoField, type VideoTextField } from "@/actions/videos";
+import { useI18n } from "../I18n";
 
 /**
  * Campo de texto que salva sozinho ao sair (onBlur). Não existe botão "salvar"
@@ -26,6 +27,7 @@ export function TextField({
   placeholder?: string;
   mono?: boolean;
 }) {
+  const { t } = useI18n();
   const [pending, start] = useTransition();
   const latest = useRef(value);
   const saved = useRef(value);
@@ -44,12 +46,12 @@ export function TextField({
   return (
     <label className="block">
       <span className="mb-1.5 flex items-baseline gap-2">
-        <span className="text-sm font-medium text-ink">{label}</span>
-        {hint && <span className="text-xs text-ink-faint">{hint}</span>}
+        <span className="text-sm font-medium text-ink">{t(label)}</span>
+        {hint && <span className="text-xs text-ink-faint">{t(hint)}</span>}
         {pending && (
-          <span className="ml-auto text-[11px] text-teal">salvando…</span>
+          <span className="ml-auto text-[11px] text-teal">{t("salvando…")}</span>
         )}
-        {!pending && savedOnce && <span className="ml-auto text-[11px] text-teal">salvo</span>}
+        {!pending && savedOnce && <span className="ml-auto text-[11px] text-teal">{t("salvo")}</span>}
       </span>
 
       {rows === 1 ? (
@@ -57,7 +59,7 @@ export function TextField({
           defaultValue={value}
           maxLength={field === "title" ? 300 : 30000}
           onChange={e => { latest.current = e.target.value; setSavedOnce(false); }}
-          placeholder={placeholder}
+          placeholder={t(placeholder)}
           onBlur={(e) => {
             persist(e.target.value);
           }}
@@ -71,7 +73,7 @@ export function TextField({
           maxLength={30000}
           onChange={e => { latest.current = e.target.value; setSavedOnce(false); }}
           rows={rows}
-          placeholder={placeholder}
+          placeholder={t(placeholder)}
           onBlur={(e) => {
             persist(e.target.value);
           }}
@@ -80,7 +82,7 @@ export function TextField({
           }`}
         />
       )}
-      {error && <span className="mt-2 block text-xs text-rose" role="alert">{error} <button type="button" disabled={pending} className="underline" onClick={()=>persist(latest.current)}>Tentar salvar</button></span>}
+      {error && <span className="mt-2 block text-xs text-rose" role="alert">{t(error)} <button type="button" disabled={pending} className="underline" onClick={()=>persist(latest.current)}>{t("Tentar salvar")}</button></span>}
     </label>
   );
 }
@@ -95,11 +97,12 @@ export function SectionTitle({
   hint?: string;
   action?: React.ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <div className="mb-3 flex items-baseline gap-2">
-      <h3 className="text-sm font-semibold text-ink">{children}</h3>
-      {hint && <span className="text-xs text-ink-faint">{hint}</span>}
-      {action && <div className="ml-auto">{action}</div>}
+      <h3 className="text-sm font-semibold text-ink">{t(children)}</h3>
+      {hint && <span className="text-xs text-ink-faint">{t(hint)}</span>}
+      {action && <div className="ml-auto">{t(action)}</div>}
     </div>
   );
 }

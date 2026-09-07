@@ -22,6 +22,7 @@ import {
 import { stageProgress, type VideoDTO } from "@/lib/types";
 import ChecklistEditor from "@/components/ChecklistEditor";
 import StagePanel from "./StagePanels";
+import { useI18n, LanguageSwitch } from "../I18n";
 
 /**
  * Tela cheia de um vídeo.
@@ -31,6 +32,7 @@ import StagePanel from "./StagePanels";
  * `video.stage`. Só os botões Avançar/Voltar mudam a etapa de verdade.
  */
 export default function VideoWorkspace({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   const [viewing, setViewing] = useState<Stage>(video.stage);
   const [pending, start] = useTransition();
   const [error, setError] = useState("");
@@ -61,7 +63,7 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
           </Link>
 
           <input
-            aria-label="Título do vídeo"
+            aria-label={t("Título do vídeo")}
             maxLength={300}
             defaultValue={video.title}
             onBlur={(e) => {
@@ -75,11 +77,11 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
           <span
             className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold"
             style={{ background: `${STAGE_COLORS[video.stage]}1A`, color: STAGE_COLORS[video.stage] }}
-            title="Etapa atual do vídeo"
+            title={t("Etapa atual do vídeo")}
           >
-            {STAGE_ICONS[video.stage]} {STAGE_LABELS[video.stage]}
+            <LanguageSwitch /> {t(STAGE_ICONS[video.stage])} {t(STAGE_LABELS[video.stage])}
             <span className="opacity-70">
-              · {done}/{total}
+              · {t(done)}/{t(total)}
             </span>
           </span>
         </div>
@@ -107,10 +109,10 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
                       ? { opacity: 0.75 }
                       : { opacity: 0.5 }
                 }
-                title={atual ? "Etapa atual do vídeo" : STAGE_LABELS[s]}
+                title={atual ? t("Etapa atual do vídeo") : t(STAGE_LABELS[s])}
               >
-                <span>{STAGE_ICONS[s]}</span>
-                {STAGE_LABELS[s]}
+                <span>{t(STAGE_ICONS[s])}</span>
+                {t(STAGE_LABELS[s])}
                 {atual && !vendo && (
                   <span
                     className="h-1.5 w-1.5 rounded-full"
@@ -122,7 +124,7 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
           })}
         </nav>
       </header>
-      {error && <p className="studio-error" role="alert">{error}</p>}
+      {error && <p className="studio-error" role="alert">{t(error)}</p>}
 
       {/* ---------------------------------------------------------------- */}
       {/* Corpo: painel da etapa + checklist lateral                        */}
@@ -135,16 +137,15 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
                 className="flex items-center gap-2 text-base font-semibold"
                 style={{ color }}
               >
-                {STAGE_ICONS[viewing]} {STAGE_LABELS[viewing]}
+                {t(STAGE_ICONS[viewing])} {t(STAGE_LABELS[viewing])}
                 {!isCurrent && (
-                  <span className="rounded-md bg-canvas px-2 py-0.5 text-[11px] font-normal text-ink-faint ring-1 ring-line-soft">
-                    apenas visualizando — o vídeo está em{" "}
-                    {STAGE_LABELS[video.stage]}
+                  <span className="rounded-md bg-canvas px-2 py-0.5 text-[11px] font-normal text-ink-faint ring-1 ring-line-soft">{t(" apenas visualizando — o vídeo está em")}{" "}
+                    {t(STAGE_LABELS[video.stage])}
                   </span>
                 )}
               </h2>
               <p className="mt-1 text-sm text-ink-faint">
-                {STAGE_HINTS[viewing]}
+                {t(STAGE_HINTS[viewing])}
               </p>
             </div>
 
@@ -166,7 +167,7 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
       {/* Rodapé: mover o vídeo entre etapas                                */}
       {/* ---------------------------------------------------------------- */}
       <footer className="flex flex-wrap shrink-0 items-center gap-2 border-t border-line bg-surface-2/40 px-4 py-3.5">
-        <DeleteButton videoId={video.id} title={video.title} />
+        <DeleteButton videoId={video.id} title={t(video.title)} />
 
         <div className="ml-auto flex items-center gap-2">
           <button
@@ -178,9 +179,7 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
             }
             disabled={!backward || pending}
             className="rounded-lg border border-line px-3.5 py-2 text-sm text-ink-dim transition hover:text-ink disabled:opacity-35"
-          >
-            ← Voltar etapa
-          </button>
+          >{t(" ← Voltar etapa ")}</button>
 
           <button
             onClick={() =>
@@ -201,6 +200,7 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
 }
 
 function DeleteButton({ videoId, title }: { videoId: string; title: string }) {
+  const { t } = useI18n();
   const [pending, start] = useTransition();
   const router = useRouter();
 
@@ -216,8 +216,6 @@ function DeleteButton({ videoId, title }: { videoId: string; title: string }) {
       }}
       disabled={pending}
       className="rounded-lg px-2.5 py-2 text-xs text-ink-faint transition hover:bg-rose/10 hover:text-rose disabled:opacity-50"
-    >
-      Excluir vídeo
-    </button>
+    >{t(" Excluir vídeo ")}</button>
   );
 }
