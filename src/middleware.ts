@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isEmbedBridge = pathname === "/embed";
   const isHubAuthEndpoint = pathname === "/api/auth/hub";
-  const isPublicPath = isEmbedBridge || isHubAuthEndpoint;
+  const isPublicPath = isEmbedBridge || isHubAuthEndpoint || pathname === '/api/members' || pathname === '/login';
 
   if (!isAuthConfigured()) {
     if (isPublicPath) return NextResponse.next();
@@ -18,7 +18,8 @@ export async function middleware(request: NextRequest) {
   }
 
   const token = request.cookies.get(AUTH_COOKIE)?.value;
-  const authenticated = await verifySessionToken(token);
+  // Member identity/approval is verified again at every server data boundary.
+  const authenticated = await verifySessionToken(token) || /^[a-f0-9]{64}$/.test(request.cookies.get('artx_member')?.value ?? '');
 
   if (!authenticated && !isPublicPath) {
     if (pathname.startsWith("/api/")) {

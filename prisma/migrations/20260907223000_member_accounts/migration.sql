@@ -1,0 +1,17 @@
+BEGIN;
+ALTER TABLE public."Video" ADD COLUMN IF NOT EXISTS "ownerId" TEXT NOT NULL DEFAULT 'owner';
+CREATE INDEX IF NOT EXISTS "Video_ownerId_stage_order_idx" ON public."Video"("ownerId",stage,"order");
+CREATE TABLE IF NOT EXISTS public."MemberAccount" (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, "passwordHash" TEXT NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS public."MemberGrant" ("memberId" TEXT NOT NULL REFERENCES public."MemberAccount"(id) ON DELETE CASCADE, app TEXT NOT NULL CHECK(app IN ('videos','study','university')), status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected','revoked')), "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY("memberId",app));
+CREATE TABLE IF NOT EXISTS public."MemberSession" (digest TEXT PRIMARY KEY, principal TEXT NOT NULL, app TEXT NOT NULL CHECK(app IN ('videos','study','university')), "expiresAt" TIMESTAMP(3) NOT NULL);
+CREATE INDEX IF NOT EXISTS "MemberSession_principal_app_idx" ON public."MemberSession"(principal,app);
+CREATE TABLE IF NOT EXISTS public."MemberState" (principal TEXT NOT NULL, app TEXT NOT NULL CHECK(app IN ('videos','study','university')), payload JSONB NOT NULL, revision INTEGER NOT NULL DEFAULT 1, "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(principal,app));
+CREATE TABLE IF NOT EXISTS public."AccessThrottle" (key TEXT PRIMARY KEY, attempts INTEGER NOT NULL DEFAULT 1, "expiresAt" TIMESTAMP(3) NOT NULL);
+ALTER TABLE public."MemberAccount" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."MemberGrant" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."MemberSession" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."MemberState" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."AccessThrottle" ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public."MemberAccount",public."MemberGrant",public."MemberSession",public."MemberState",public."AccessThrottle" FROM anon,authenticated;
+COMMIT;
+SELECT count(*) as preserved_videos FROM public."Video";
