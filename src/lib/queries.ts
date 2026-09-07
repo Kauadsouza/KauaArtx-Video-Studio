@@ -64,8 +64,9 @@ function toDTO(v: Row): VideoDTO {
 }
 
 export async function loadVideos(): Promise<VideoDTO[]> {
-  await requireSession();
+  const ownerId = await requireSession();
   const videos = await prisma.video.findMany({
+    where: { ownerId },
     orderBy: [{ stage: "asc" }, { order: "asc" }],
     include,
   });
@@ -73,7 +74,7 @@ export async function loadVideos(): Promise<VideoDTO[]> {
 }
 
 export async function loadVideo(id: string): Promise<VideoDTO | null> {
-  await requireSession();
-  const video = await prisma.video.findUnique({ where: { id }, include });
+  const ownerId = await requireSession();
+  const video = await prisma.video.findFirst({ where: { id, ownerId }, include });
   return video ? toDTO(video) : null;
 }

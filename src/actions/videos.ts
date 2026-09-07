@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireSession } from "@/lib/require-session";
+import { requireSession, requireVideo, requireBlock, requireItem } from "@/lib/require-session";
 import { prisma } from "@/lib/prisma";
 import {
   CHECKLIST_TEMPLATES,
@@ -49,8 +49,9 @@ async function ensureChecklistForStage(videoId: string, stage: Stage) {
 
 /** Próxima posição livre no fim de uma coluna. */
 async function nextOrderInStage(stage: Stage): Promise<number> {
+  const ownerId = await requireSession();
   const last = await prisma.video.findFirst({
-    where: { stage },
+    where: { stage, ownerId },
     orderBy: { order: "desc" },
     select: { order: true },
   });
@@ -69,13 +70,14 @@ function refresh() {
 // ---------------------------------------------------------------------------
 
 export async function createVideo(title: string, description = "") {
-  await requireSession();
+  const ownerId = await requireSession();
   const clean = title.trim() || "Vídeo sem título";
   if (clean.length > 300 || description.length > 5000) throw new Error("Reduza o título ou a descrição da ideia.");
   const order = await nextOrderInStage("IDEIA");
 
   const video = await prisma.video.create({
     data: {
+      ownerId,
       title: clean,
       description: description.trim(),
       stage: "IDEIA",
@@ -118,7 +120,7 @@ export async function updateVideoField(
   field: VideoTextField | "title",
   value: string,
 ) {
-  await requireSession();
+  await requireVideo(videoId);
   if (typeof value !== "string" || value.length > (field === "title" ? 300 : 30000)) throw new Error("Texto acima do limite permitido.");
   // Título tem tratamento próprio: nunca pode ficar vazio.
   if (field === "title") {
@@ -141,7 +143,7 @@ export async function updateVideoField(
 
 /** Data/hora de publicação (etapa Agendado). String vazia limpa o campo. */
 export async function updatePublishAt(videoId: string, value: string) {
-  await requireSession();
+  await requireVideo(videoId);
   const parsed = value ? new Date(value) : null;
   await prisma.video.update({
     where: { id: videoId },
@@ -153,7 +155,7 @@ export async function updatePublishAt(videoId: string, value: string) {
 }
 
 export async function deleteVideo(videoId: string) {
-  await requireSession();
+  await requireVideo(videoId);
   // ScriptBlock e ChecklistItem somem junto (onDelete: Cascade no schema).
   await prisma.video.delete({ where: { id: videoId } });
   refresh();
@@ -168,7 +170,7 @@ export async function moveVideo(
   toStage: Stage,
   newOrder: number,
 ) {
-  await requireSession();
+  await requireVideo(videoId);
   if (!STAGES.includes(toStage) || !Number.isSafeInteger(newOrder) || newOrder < 0) throw new Error("Etapa ou posição inválida.");
   const video = await prisma.video.findUnique({
     where: { id: videoId },
@@ -179,7 +181,7 @@ export async function moveVideo(
   await prisma.$transaction(async (tx) => {
     // Abre espaço na coluna de destino empurrando quem está a partir da posição.
     await tx.video.updateMany({
-      where: { stage: toStage, order: { gte: newOrder }, id: { not: videoId } },
+      where: { ownerId: await requireSession(), stage: toStage, order: { gte: newOrder }, id: { not: videoId } },
       data: { order: { increment: 1 } },
     });
 
@@ -195,7 +197,7 @@ export async function moveVideo(
 
 /** Botão "Avançar etapa". */
 export async function advanceStage(videoId: string) {
-  await requireSession();
+  await requireVideo(videoId);
   const video = await prisma.video.findUnique({
     where: { id: videoId },
     select: { stage: true },
@@ -216,7 +218,7 @@ export async function advanceStage(videoId: string) {
 
 /** Botão "Voltar etapa". */
 export async function regressStage(videoId: string) {
-  await requireSession();
+  await requireVideo(videoId);
   const video = await prisma.video.findUnique({
     where: { id: videoId },
     select: { stage: true },
@@ -240,7 +242,7 @@ export async function regressStage(videoId: string) {
 // ---------------------------------------------------------------------------
 
 export async function toggleChecklistItem(itemId: string, done: boolean) {
-  await requireSession();
+  await requireItem(itemId);
   await prisma.checklistItem.update({ where: { id: itemId }, data: { done } });
   refresh();
 }
@@ -250,7 +252,7 @@ export async function addChecklistItem(
   stage: Stage,
   text: string,
 ) {
-  await requireSession();
+  await requireVideo(videoId);
   const clean = text.trim();
   if (!clean) return;
 
@@ -267,7 +269,7 @@ export async function addChecklistItem(
 }
 
 export async function updateChecklistItem(itemId: string, text: string) {
-  await requireSession();
+  await requireItem(itemId);
   await prisma.checklistItem.update({
     where: { id: itemId },
     data: { text: text.trim() },
@@ -276,14 +278,14 @@ export async function updateChecklistItem(itemId: string, text: string) {
 }
 
 export async function deleteChecklistItem(itemId: string) {
-  await requireSession();
+  await requireItem(itemId);
   await prisma.checklistItem.delete({ where: { id: itemId } });
   refresh();
 }
 
 /** Reordena um item pra cima (-1) ou pra baixo (+1) dentro da etapa. */
 export async function moveChecklistItem(itemId: string, direction: -1 | 1) {
-  await requireSession();
+  await requireItem(itemId);
   const item = await prisma.checklistItem.findUnique({ where: { id: itemId } });
   if (!item) return;
 
@@ -315,7 +317,7 @@ export async function moveChecklistItem(itemId: string, direction: -1 | 1) {
 // ---------------------------------------------------------------------------
 
 export async function addScriptBlock(videoId: string) {
-  await requireSession();
+  await requireVideo(videoId);
   const last = await prisma.scriptBlock.findFirst({
     where: { videoId },
     orderBy: { order: "desc" },
@@ -340,7 +342,7 @@ export async function updateScriptBlock(
   blockId: string,
   data: { startSeconds?: number; endSeconds?: number; content?: string },
 ) {
-  await requireSession();
+  await requireBlock(blockId);
   await prisma.scriptBlock.update({
     where: { id: blockId },
     data: {
@@ -365,7 +367,7 @@ export async function setBlockStatus(
   kind: "recording" | "editing",
   status: BlockStatus,
 ) {
-  await requireSession();
+  await requireBlock(blockId);
   if (!["recording", "editing"].includes(kind) || !BLOCK_STATUSES.includes(status)) throw new Error("Status inválido.");
   await prisma.scriptBlock.update({
     where: { id: blockId },
@@ -379,7 +381,7 @@ export async function setBlockStatus(
 
 /** Observações específicas de um bloco (take ruim, corte a fazer, etc.) */
 export async function updateBlockNotes(blockId: string, notes: string) {
-  await requireSession();
+  await requireBlock(blockId);
   await prisma.scriptBlock.update({
     where: { id: blockId },
     data: { blockNotes: notes },
@@ -388,13 +390,13 @@ export async function updateBlockNotes(blockId: string, notes: string) {
 }
 
 export async function deleteScriptBlock(blockId: string) {
-  await requireSession();
+  await requireBlock(blockId);
   await prisma.scriptBlock.delete({ where: { id: blockId } });
   refresh();
 }
 
 export async function moveScriptBlock(blockId: string, direction: -1 | 1) {
-  await requireSession();
+  await requireBlock(blockId);
   const block = await prisma.scriptBlock.findUnique({ where: { id: blockId } });
   if (!block) return;
 

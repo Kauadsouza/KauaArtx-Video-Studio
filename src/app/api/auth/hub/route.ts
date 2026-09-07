@@ -72,6 +72,7 @@ export async function POST(request: Request) {
   if (!sessionToken) return NextResponse.json({ error: "Não foi possível criar a sessão." }, { status: 500 });
 
   const response = NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
+  response.cookies.delete('artx_member');
   response.cookies.set(AUTH_COOKIE, sessionToken, {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
