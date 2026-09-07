@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { I18nProvider } from "@/components/I18n";
 
 export const metadata: Metadata = {
   title: "Produção · KauaArtx",
@@ -11,7 +12,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className="min-h-screen antialiased"><I18nProvider>{children}</I18nProvider></body>
     </html>
   );
 }

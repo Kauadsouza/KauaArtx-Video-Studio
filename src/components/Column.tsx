@@ -14,6 +14,7 @@ import {
 } from "@/lib/stages";
 import type { VideoDTO } from "@/lib/types";
 import VideoCard from "./VideoCard";
+import { useI18n } from "./I18n";
 
 export default function Column({
   stage,
@@ -28,6 +29,7 @@ export default function Column({
   filtering: boolean;
   onOpen: (id: string) => void;
 }) {
+  const { t } = useI18n();
   // A coluna inteira é uma área de drop — dá pra soltar no vazio embaixo.
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   const color = STAGE_COLORS[stage];
@@ -36,9 +38,9 @@ export default function Column({
     <section className="flex w-[300px] shrink-0 flex-col">
       {/* Cabeçalho da coluna */}
       <div className="mb-3 flex items-center gap-2 px-1">
-        <span className="text-sm">{STAGE_ICONS[stage]}</span>
+        <span className="text-sm">{t(STAGE_ICONS[stage])}</span>
         <h2 className="text-sm font-semibold tracking-tight text-ink">
-          {STAGE_LABELS[stage]}
+          {t(STAGE_LABELS[stage])}
         </h2>
         <span
           className="ml-auto rounded-md px-2 py-0.5 text-xs font-semibold tabular-nums"
@@ -49,7 +51,7 @@ export default function Column({
               : `${totalInStage} vídeos nesta etapa`
           }
         >
-          {filtering ? `${videos.length}/${totalInStage}` : totalInStage}
+          {filtering ? `${videos.length}/${totalInStage}` : t(totalInStage)}
         </span>
       </div>
 

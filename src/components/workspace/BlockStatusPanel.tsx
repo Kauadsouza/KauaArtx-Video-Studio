@@ -9,6 +9,7 @@ import {
   formatSeconds,
 } from "@/lib/stages";
 import type { ScriptBlockDTO } from "@/lib/types";
+import { useI18n } from "../I18n";
 
 /**
  * Os blocos do roteiro vistos como lista de tarefas — usado tanto na etapa de
@@ -22,18 +23,14 @@ export default function BlockStatusPanel({
   blocks: ScriptBlockDTO[];
   kind: "recording" | "editing";
 }) {
+  const { t } = useI18n();
   const [, start] = useTransition();
 
   if (blocks.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-line-soft px-4 py-10 text-center">
-        <p className="text-sm text-ink-dim">
-          O roteiro ainda não foi quebrado em blocos.
-        </p>
-        <p className="mt-1 text-xs text-ink-faint">
-          Volte na etapa <strong className="text-teal">Roteiro</strong> e crie os
-          blocos — eles aparecem aqui automaticamente.
-        </p>
+        <p className="text-sm text-ink-dim">{t(" O roteiro ainda não foi quebrado em blocos. ")}</p>
+        <p className="mt-1 text-xs text-ink-faint">{t(" Volte na etapa ")}<strong className="text-teal">{t("Roteiro")}</strong>{t(" e crie os blocos — eles aparecem aqui automaticamente. ")}</p>
       </div>
     );
   }
@@ -60,8 +57,7 @@ export default function BlockStatusPanel({
             <div className="flex items-start gap-3">
               {/* Identificação do bloco */}
               <div className="w-28 shrink-0">
-                <div className="font-mono text-[11px] text-ink-faint">
-                  bloco {index + 1}
+                <div className="font-mono text-[11px] text-ink-faint">{t(" bloco ")}{index + 1}
                 </div>
                 <div
                   className="font-mono text-xs font-semibold"
@@ -79,9 +75,7 @@ export default function BlockStatusPanel({
                 }`}
               >
                 {block.content || (
-                  <span className="text-ink-faint italic">
-                    (bloco sem texto)
-                  </span>
+                  <span className="text-ink-faint italic">{t(" (bloco sem texto) ")}</span>
                 )}
               </p>
 
@@ -96,7 +90,7 @@ export default function BlockStatusPanel({
                       onClick={() =>
                         start(() => setBlockStatus(block.id, kind, s))
                       }
-                      title={BLOCK_STATUS_LABELS[s]}
+                      title={t(BLOCK_STATUS_LABELS[s])}
                       className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition ${
                         active
                           ? "text-abyss"
@@ -108,7 +102,7 @@ export default function BlockStatusPanel({
                           : { background: "var(--color-canvas)" }
                       }
                     >
-                      {BLOCK_STATUS_LABELS[s]}
+                      {t(BLOCK_STATUS_LABELS[s])}
                     </button>
                   );
                 })}
@@ -120,8 +114,8 @@ export default function BlockStatusPanel({
               defaultValue={block.blockNotes}
               placeholder={
                 kind === "recording"
-                  ? "obs. da gravação: take, luz, áudio…"
-                  : "obs. da edição: corte, trilha, legenda…"
+                  ? t("obs. da gravação: take, luz, áudio…")
+                  : t("obs. da edição: corte, trilha, legenda…")
               }
               onBlur={(e) => {
                 if (e.target.value === block.blockNotes) return;

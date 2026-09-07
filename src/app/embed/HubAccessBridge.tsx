@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n, LanguageSwitch } from "@/components/I18n";
 
 const hubOrigins = [
   process.env.NEXT_PUBLIC_HUB_ORIGIN ?? "https://artx-hub.vercel.app",
@@ -8,6 +9,7 @@ const hubOrigins = [
 ];
 
 export default function HubAccessBridge() {
+  const { t } = useI18n();
   const [status, setStatus] = useState("Confirmando acesso pelo ARTX Hub...");
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function HubAccessBridge() {
       <span className="mx-auto mb-4 grid h-11 w-11 place-items-center rounded-xl bg-teal/10 text-xl text-teal ring-1 ring-teal/25">🎬</span>
       <p className="text-xs font-semibold tracking-[0.16em] text-teal">ARTX HUB</p>
       <h1 className="mt-2 text-lg font-semibold text-ink">KauaArtx Video Studio</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-dim">{status}</p>
+      <p className="mt-2 text-sm leading-6 text-ink-dim">{t(status)}</p><div className="mt-5"><LanguageSwitch /></div>
     </div>
   </main>;
 }

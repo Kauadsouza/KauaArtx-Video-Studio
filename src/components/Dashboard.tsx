@@ -7,6 +7,7 @@ import {
   STAGE_LABELS,
   type Stage,
 } from "@/lib/stages";
+import { useI18n } from "./I18n";
 
 /**
  * Faixa de contagem por etapa, logo abaixo do cabeçalho.
@@ -19,10 +20,11 @@ export default function Dashboard({
   counts: Record<Stage, number>;
   total: number;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-1.5 overflow-x-auto border-t border-line/50 px-6 py-2.5">
       <span className="mr-2 shrink-0 text-[11px] tracking-wide text-ink-faint uppercase">
-        {total} {total === 1 ? "vídeo" : "vídeos"}
+        {t(total)} {total === 1 ? t("vídeo") : t("vídeos")}
       </span>
 
       {STAGES.map((stage) => {
@@ -38,13 +40,13 @@ export default function Dashboard({
             }`}
             title={`${n} em ${STAGE_LABELS[stage]}`}
           >
-            <span className="text-[11px]">{STAGE_ICONS[stage]}</span>
-            <span className="text-ink-dim">{STAGE_LABELS[stage]}</span>
+            <span className="text-[11px]">{t(STAGE_ICONS[stage])}</span>
+            <span className="text-ink-dim">{t(STAGE_LABELS[stage])}</span>
             <span
               className="font-semibold tabular-nums"
               style={{ color: n > 0 ? color : undefined }}
             >
-              {n}
+              {t(n)}
             </span>
           </div>
         );

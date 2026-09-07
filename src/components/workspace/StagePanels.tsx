@@ -9,6 +9,7 @@ import AiButton from "@/components/AiButton";
 import BlockStatusPanel from "./BlockStatusPanel";
 import { SectionTitle, TextField } from "./Field";
 import { safeVideoUrl } from "@/lib/safe-url";
+import { useI18n } from "../I18n";
 
 /**
  * Cada etapa tem o seu próprio espaço de trabalho, com os campos que fazem
@@ -44,31 +45,32 @@ export default function StagePanel({
 // ---------------------------------------------------------------------------
 
 function PainelIdeia({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   return (
     <div className="space-y-6">
       <TextField
         videoId={video.id}
         field="description"
         label="Do que se trata"
-        hint="em uma ou duas frases"
+        hint={t("em uma ou duas frases")}
         value={video.description}
         rows={3}
-        placeholder="A ideia solta, do jeito que veio na cabeça…"
+        placeholder={t("A ideia solta, do jeito que veio na cabeça…")}
       />
       <TextField
         videoId={video.id}
         field="hook"
-        label="Gancho"
+        label={t("Gancho")}
         hint="os primeiros 5 segundos — o que segura a pessoa"
         value={video.hook}
         rows={3}
-        placeholder="Ex: 'Faltam 8 meses pra viagem e eu ainda não tenho passaporte.'"
+        placeholder={t("Ex: 'Faltam 8 meses pra viagem e eu ainda não tenho passaporte.'")}
       />
       <TextField
         videoId={video.id}
         field="references"
-        label="Referências"
-        hint="uma por linha"
+        label={t("Referências")}
+        hint={t("uma por linha")}
         value={video.references}
         rows={4}
         placeholder={"https://youtube.com/...\nvídeo do fulano sobre orçamento"}
@@ -79,7 +81,7 @@ function PainelIdeia({ video }: { video: VideoDTO }) {
         label="Notas livres"
         value={video.notes}
         rows={4}
-        placeholder="Qualquer coisa que não cabe nos campos acima."
+        placeholder={t("Qualquer coisa que não cabe nos campos acima.")}
       />
     </div>
   );
@@ -88,6 +90,7 @@ function PainelIdeia({ video }: { video: VideoDTO }) {
 // ---------------------------------------------------------------------------
 
 function PainelRoteiro({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   const total = video.scriptBlocks.reduce(
     (max, b) => Math.max(max, b.endSeconds),
     0,
@@ -97,10 +100,8 @@ function PainelRoteiro({ video }: { video: VideoDTO }) {
     <div className="space-y-6">
       {video.hook && (
         <div className="rounded-xl border border-teal/25 bg-teal/[0.06] p-3.5">
-          <div className="mb-1 text-[11px] font-medium tracking-wide text-teal uppercase">
-            gancho definido na etapa Ideia
-          </div>
-          <p className="text-sm leading-relaxed text-ink-dim">{video.hook}</p>
+          <div className="mb-1 text-[11px] font-medium tracking-wide text-teal uppercase">{t(" gancho definido na etapa Ideia ")}</div>
+          <p className="text-sm leading-relaxed text-ink-dim">{t(video.hook)}</p>
         </div>
       )}
 
@@ -111,16 +112,13 @@ function PainelRoteiro({ video }: { video: VideoDTO }) {
       />
 
       {total > 0 && (
-        <p className="text-xs text-ink-faint">
-          Duração planejada: <strong>{formatSeconds(total)}</strong>. Estes
-          blocos vão reaparecer nas etapas de Gravação e Edição.
-        </p>
+        <p className="text-xs text-ink-faint">{t(" Duração planejada: ")}<strong>{formatSeconds(total)}</strong>{t(". Estes blocos vão reaparecer nas etapas de Gravação e Edição. ")}</p>
       )}
 
       <TextField
         videoId={video.id}
         field="notes"
-        label="Notas do roteiro"
+        label={t("Notas do roteiro")}
         value={video.notes}
         rows={4}
         placeholder="O que cortar, o que ainda falta pesquisar…"
@@ -132,18 +130,17 @@ function PainelRoteiro({ video }: { video: VideoDTO }) {
 // ---------------------------------------------------------------------------
 
 function PainelGravacao({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   const { done, total } = blockProgress(video, "recording");
 
   return (
     <div className="space-y-5">
-      <SectionTitle hint={`${done} de ${total} blocos gravados`}>
-        Lista de gravação
-      </SectionTitle>
+      <SectionTitle hint={`${done} de ${total} blocos gravados`}>{t(" Lista de gravação ")}</SectionTitle>
       <BlockStatusPanel blocks={video.scriptBlocks} kind="recording" />
       <TextField
         videoId={video.id}
         field="notes"
-        label="Notas da gravação"
+        label={t("Notas da gravação")}
         value={video.notes}
         rows={3}
         placeholder="Equipamento, luz, o que deu errado…"
@@ -155,21 +152,20 @@ function PainelGravacao({ video }: { video: VideoDTO }) {
 // ---------------------------------------------------------------------------
 
 function PainelEdicao({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   const { done, total } = blockProgress(video, "editing");
 
   return (
     <div className="space-y-5">
-      <SectionTitle hint={`${done} de ${total} trechos editados`}>
-        Tarefas de edição por trecho
-      </SectionTitle>
+      <SectionTitle hint={`${done} de ${total} trechos editados`}>{t(" Tarefas de edição por trecho ")}</SectionTitle>
       <BlockStatusPanel blocks={video.scriptBlocks} kind="editing" />
       <TextField
         videoId={video.id}
         field="notes"
-        label="Notas da edição"
+        label={t("Notas da edição")}
         value={video.notes}
         rows={3}
-        placeholder="Trilha escolhida, correção de cor, legendas…"
+        placeholder={t("Trilha escolhida, correção de cor, legendas…")}
       />
     </div>
   );
@@ -178,6 +174,7 @@ function PainelEdicao({ video }: { video: VideoDTO }) {
 // ---------------------------------------------------------------------------
 
 function PainelTitulo({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   const opcoes = video.titleOptions
     .split("\n")
     .map((t) => t.trim())
@@ -187,16 +184,14 @@ function PainelTitulo({ video }: { video: VideoDTO }) {
     <div className="space-y-6">
       <div>
         <SectionTitle
-          hint="uma por linha — escreva pelo menos 3"
+          hint={t("uma por linha — escreva pelo menos 3")}
           action={
             <AiButton
               field="title"
               context={{ title: video.title, description: video.description }}
             />
           }
-        >
-          Opções de título
-        </SectionTitle>
+        >{t(" Opções de título ")}</SectionTitle>
         <TextField
           videoId={video.id}
           field="titleOptions"
@@ -209,8 +204,7 @@ function PainelTitulo({ video }: { video: VideoDTO }) {
         />
         {opcoes.length > 0 && (
           <p className="mt-1.5 text-xs text-ink-faint">
-            {opcoes.length} {opcoes.length === 1 ? "opção" : "opções"} escritas
-            {opcoes.length < 3 && " — o checklist pede pelo menos 3"}
+            {t(opcoes.length)} {opcoes.length === 1 ? t("opção") : t("opções")}{t(" escritas ")}{opcoes.length < 3 && " — o checklist pede pelo menos 3"}
           </p>
         )}
       </div>
@@ -218,11 +212,11 @@ function PainelTitulo({ video }: { video: VideoDTO }) {
       <TextField
         videoId={video.id}
         field="finalTitle"
-        label="Título escolhido"
+        label={t("Título escolhido")}
         hint="o que vai pro YouTube"
         value={video.finalTitle}
         rows={1}
-        placeholder="Cole aqui a opção vencedora"
+        placeholder={t("Cole aqui a opção vencedora")}
       />
 
       <div>
@@ -233,16 +227,14 @@ function PainelTitulo({ video }: { video: VideoDTO }) {
               context={{ title: video.title, description: video.description }}
             />
           }
-        >
-          Ideia de thumbnail
-        </SectionTitle>
+        >{t(" Ideia de thumbnail ")}</SectionTitle>
         <TextField
           videoId={video.id}
           field="thumbnailIdea"
           label=""
           value={video.thumbnailIdea}
           rows={4}
-          placeholder="O que aparece, expressão do rosto, texto sobreposto…"
+          placeholder={t("O que aparece, expressão do rosto, texto sobreposto…")}
         />
       </div>
     </div>
@@ -252,21 +244,20 @@ function PainelTitulo({ video }: { video: VideoDTO }) {
 // ---------------------------------------------------------------------------
 
 function PainelRevisao({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   const { done, total } = blockProgress(video, "editing");
 
   return (
     <div className="space-y-6">
       {total > 0 && done < total && (
-        <div className="rounded-xl border border-amber/30 bg-amber/[0.06] p-3.5 text-sm text-amber">
-          Ainda faltam {total - done} de {total} trechos na edição.
-        </div>
+        <div className="rounded-xl border border-amber/30 bg-amber/[0.06] p-3.5 text-sm text-amber">{t(" Ainda faltam ")}{total - done}{t(" de ")}{t(total)}{t(" trechos na edição. ")}</div>
       )}
 
       <TextField
         videoId={video.id}
         field="reviewNotes"
         label="O que precisa corrigir"
-        hint="assista inteiro e vá anotando com o tempo"
+        hint={t("assista inteiro e vá anotando com o tempo")}
         value={video.reviewNotes}
         rows={8}
         placeholder={
@@ -277,10 +268,8 @@ function PainelRevisao({ video }: { video: VideoDTO }) {
 
       {video.finalTitle && (
         <div className="rounded-xl border border-line bg-surface p-3.5">
-          <div className="text-[11px] tracking-wide text-ink-faint uppercase">
-            título escolhido
-          </div>
-          <p className="mt-1 text-sm text-ink">{video.finalTitle}</p>
+          <div className="text-[11px] tracking-wide text-ink-faint uppercase">{t(" título escolhido ")}</div>
+          <p className="mt-1 text-sm text-ink">{t(video.finalTitle)}</p>
         </div>
       )}
     </div>
@@ -290,6 +279,7 @@ function PainelRevisao({ video }: { video: VideoDTO }) {
 // ---------------------------------------------------------------------------
 
 function PainelAgendado({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   const [, start] = useTransition();
 
   // <input type="datetime-local"> quer "YYYY-MM-DDTHH:mm" no horário local.
@@ -303,9 +293,7 @@ function PainelAgendado({ video }: { video: VideoDTO }) {
   return (
     <div className="space-y-6">
       <label className="block">
-        <span className="mb-1.5 block text-sm font-medium text-ink">
-          Data e hora da postagem
-        </span>
+        <span className="mb-1.5 block text-sm font-medium text-ink">{t(" Data e hora da postagem ")}</span>
         <input
           type="datetime-local"
           defaultValue={paraInput(video.publishAt)}
@@ -319,8 +307,8 @@ function PainelAgendado({ video }: { video: VideoDTO }) {
       <TextField
         videoId={video.id}
         field="youtubeDescription"
-        label="Descrição do YouTube"
-        hint="o texto que vai embaixo do vídeo"
+        label={t("Descrição do YouTube")}
+        hint={t("o texto que vai embaixo do vídeo")}
         value={video.youtubeDescription}
         rows={8}
         placeholder={"Sobre o que é o vídeo…\n\n📍 Me acompanhe: @KauaArtx"}
@@ -330,7 +318,7 @@ function PainelAgendado({ video }: { video: VideoDTO }) {
         videoId={video.id}
         field="tags"
         label="Tags / SEO"
-        hint="separadas por vírgula"
+        hint={t("separadas por vírgula")}
         value={video.tags}
         rows={2}
         placeholder="vlog de viagem, planejamento, mochilão, preparação"
@@ -338,10 +326,8 @@ function PainelAgendado({ video }: { video: VideoDTO }) {
 
       {video.finalTitle && (
         <div className="rounded-xl border border-line bg-surface p-3.5">
-          <div className="text-[11px] tracking-wide text-ink-faint uppercase">
-            título escolhido
-          </div>
-          <p className="mt-1 text-sm text-ink">{video.finalTitle}</p>
+          <div className="text-[11px] tracking-wide text-ink-faint uppercase">{t(" título escolhido ")}</div>
+          <p className="mt-1 text-sm text-ink">{t(video.finalTitle)}</p>
         </div>
       )}
     </div>
@@ -351,13 +337,14 @@ function PainelAgendado({ video }: { video: VideoDTO }) {
 // ---------------------------------------------------------------------------
 
 function PainelPostado({ video }: { video: VideoDTO }) {
+  const { t } = useI18n();
   const videoUrl = safeVideoUrl(video.videoUrl);
   return (
     <div className="space-y-6">
       <TextField
         videoId={video.id}
         field="videoUrl"
-        label="Link do vídeo"
+        label={t("Link do vídeo")}
         value={video.videoUrl}
         rows={1}
         placeholder="https://youtube.com/watch?v=..."
@@ -369,16 +356,14 @@ function PainelPostado({ video }: { video: VideoDTO }) {
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 rounded-lg bg-teal/12 px-3 py-2 text-sm font-medium text-teal transition hover:bg-teal/20"
-        >
-          Abrir no YouTube ↗
-        </a>
+        >{t(" Abrir no YouTube ↗ ")}</a>
       )}
 
       <TextField
         videoId={video.id}
         field="learnings"
-        label="Aprendizados pro próximo vídeo"
-        hint="o que funcionou, o que você faria diferente"
+        label={t("Aprendizados pro próximo vídeo")}
+        hint={t("o que funcionou, o que você faria diferente")}
         value={video.learnings}
         rows={8}
         placeholder={

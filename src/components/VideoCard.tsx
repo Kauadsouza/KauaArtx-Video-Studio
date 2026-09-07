@@ -5,6 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { STAGE_COLORS } from "@/lib/stages";
 import { blockProgress, stageProgress, type VideoDTO } from "@/lib/types";
+import { useI18n } from "./I18n";
 
 export default function VideoCard({
   video,
@@ -16,6 +17,7 @@ export default function VideoCard({
   /** true quando renderizado dentro do DragOverlay (o "fantasma" do arrasto). */
   overlay?: boolean;
 }) {
+  const { t } = useI18n();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: video.id, disabled: overlay });
 
@@ -59,21 +61,21 @@ export default function VideoCard({
       } ${overlay ? "cursor-grabbing border-teal/50 shadow-2xl shadow-black/50" : ""}`}
     >
       <h3 className="text-sm leading-snug font-medium text-ink">
-        {video.title}
+        {t(video.title)}
       </h3>
 
       {video.description && (
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-faint">
-          {video.description}
+          {t(video.description)}
         </p>
       )}
 
       {/* Progresso do checklist da etapa atual */}
       <div className="mt-3">
         <div className="mb-1 flex items-center justify-between text-[11px] text-ink-faint">
-          <span>checklist da etapa</span>
+          <span>{t("checklist da etapa")}</span>
           <span className="tabular-nums">
-            {done}/{total}
+            {t(done)}/{t(total)}
           </span>
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-canvas">
@@ -101,28 +103,28 @@ export default function VideoCard({
           title={
             blocks > 0
               ? `${blocks} ${blocks === 1 ? "bloco" : "blocos"} de roteiro`
-              : "roteiro ainda não foi quebrado em blocos"
+              : t("roteiro ainda não foi quebrado em blocos")
           }
         >
           {blocks > 0
             ? `📝 ${blocks} ${blocks === 1 ? "bloco" : "blocos"}`
-            : "sem roteiro"}
+            : t("sem roteiro")}
         </span>
 
         {/* Nas etapas que trabalham por bloco, mostra quantos já saíram */}
         {blocksBadge && (
           <span
             className="rounded-md bg-canvas px-1.5 py-0.5 text-[10px] font-medium text-ink-dim ring-1 ring-line-soft"
-            title={blocksBadge.title}
+            title={t(blocksBadge.title)}
           >
-            {blocksBadge.label}
+            {t(blocksBadge.label)}
           </span>
         )}
 
         {video.thumbnailIdea && (
           <span
             className="rounded-md bg-amber/12 px-1.5 py-0.5 text-[10px] font-medium text-amber"
-            title="tem ideia de thumbnail/título"
+            title={t("tem ideia de thumbnail/título")}
           >
             🖼️
           </span>
