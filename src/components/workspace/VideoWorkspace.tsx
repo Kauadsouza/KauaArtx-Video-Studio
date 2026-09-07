@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   advanceStage,
+  moveVideo,
   deleteVideo,
   regressStage,
   updateVideoField,
@@ -124,6 +125,7 @@ export default function VideoWorkspace({ video }: { video: VideoDTO }) {
           })}
         </nav>
       </header>
+      <div className="flex flex-wrap items-center gap-3 border-b border-line px-6 py-3"><label className="text-sm text-ink-dim" htmlFor="production-stage">Mover vídeo para</label><select id="production-stage" className="min-h-11 rounded-lg border border-line bg-surface px-3 text-sm" value={video.stage} disabled={pending} onChange={event => { const target = event.target.value as Stage; start(async () => { try { await moveVideo(video.id, target, 0); setViewing(target); setError(""); } catch { setError("Não foi possível mover o vídeo. A etapa anterior foi mantida."); } }); }}>{STAGES.map(stage => <option key={stage} value={stage}>{STAGE_LABELS[stage]}</option>)}</select><small className="text-ink-faint">Pode voltar sem apagar roteiro, notas ou checklists.</small></div>
       {error && <p className="studio-error" role="alert">{t(error)}</p>}
 
       {/* ---------------------------------------------------------------- */}

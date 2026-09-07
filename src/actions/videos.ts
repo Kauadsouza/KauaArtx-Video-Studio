@@ -5,6 +5,8 @@ import { requireSession } from "@/lib/require-session";
 import { prisma } from "@/lib/prisma";
 import {
   CHECKLIST_TEMPLATES,
+  STAGES,
+  BLOCK_STATUSES,
   nextStage,
   prevStage,
   type BlockStatus,
@@ -167,6 +169,7 @@ export async function moveVideo(
   newOrder: number,
 ) {
   await requireSession();
+  if (!STAGES.includes(toStage) || !Number.isSafeInteger(newOrder) || newOrder < 0) throw new Error("Etapa ou posição inválida.");
   const video = await prisma.video.findUnique({
     where: { id: videoId },
     select: { stage: true },
@@ -363,6 +366,7 @@ export async function setBlockStatus(
   status: BlockStatus,
 ) {
   await requireSession();
+  if (!["recording", "editing"].includes(kind) || !BLOCK_STATUSES.includes(status)) throw new Error("Status inválido.");
   await prisma.scriptBlock.update({
     where: { id: blockId },
     data:
