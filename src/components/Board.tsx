@@ -196,9 +196,7 @@ export default function Board({ initialVideos }: { initialVideos: VideoDTO[] }) 
       <header className="shrink-0 border-b border-line/70 bg-abyss/50 backdrop-blur">
         <div className="flex flex-wrap items-center gap-4 px-6 py-3.5">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal/10 text-base ring-1 ring-teal/25">
-              🎬
-            </span>
+            <img className="studio-logo" src="/icon.svg" alt="" />
             <div className="leading-tight">
               <div className="text-sm font-semibold tracking-tight text-ink">
                 ARTX Studio
