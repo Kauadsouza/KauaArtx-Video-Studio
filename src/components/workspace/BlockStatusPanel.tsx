@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { setBlockStatus, updateBlockNotes } from "@/actions/videos";
 import {
   BLOCK_STATUSES,
@@ -24,7 +24,11 @@ export default function BlockStatusPanel({
   kind: "recording" | "editing";
 }) {
   const { t } = useI18n();
-  const [, start] = useTransition();
+  const [pending, start] = useTransition();
+  const [notice, setNotice] = useState("");
+  function changeStatus(id: string, status: (typeof BLOCK_STATUSES)[number]) {
+    start(async () => { try { await setBlockStatus(id, kind, status); setNotice(status === "EM_PROGRESSO" ? "Bloco reaberto: em produção." : "Status salvo. Você pode alterá-lo a qualquer momento."); } catch { setNotice("Não foi possível salvar. Tente novamente."); } });
+  }
 
   if (blocks.length === 0) {
     return (
@@ -39,7 +43,7 @@ export default function BlockStatusPanel({
     kind === "recording" ? b.recordingStatus : b.editingStatus;
 
   return (
-    <ul className="space-y-2">
+    <div><p className="mb-3 text-sm text-ink-dim">Marcou por engano? Reabra qualquer bloco sem perder o roteiro.</p><p role="status" className="mb-3 text-sm text-teal">{notice}</p><ul className="space-y-2">
       {blocks.map((block, index) => {
         const status = statusOf(block);
         const color = BLOCK_STATUS_COLORS[status];
@@ -54,7 +58,7 @@ export default function BlockStatusPanel({
                 : undefined
             }
           >
-            <div className="flex items-start gap-3">
+            <div className="flex flex-wrap items-start gap-3">
               {/* Identificação do bloco */}
               <div className="w-28 shrink-0">
                 <div className="font-mono text-[11px] text-ink-faint">{t(" bloco ")}{index + 1}
@@ -80,18 +84,18 @@ export default function BlockStatusPanel({
               </p>
 
               {/* Seletor de status */}
-              <div className="flex shrink-0 gap-1">
+              <div className="flex w-full flex-wrap gap-2">
                 {BLOCK_STATUSES.map((s) => {
                   const active = s === status;
                   return (
                     <button
                       key={s}
                       type="button"
-                      onClick={() =>
-                        start(() => setBlockStatus(block.id, kind, s))
-                      }
+                      onClick={() => changeStatus(block.id, s)}
+                      disabled={pending}
+                      aria-pressed={active}
                       title={t(BLOCK_STATUS_LABELS[s])}
-                      className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition ${
+                      className={`min-h-11 rounded-md px-3 py-2 text-sm font-medium transition ${
                         active
                           ? "text-abyss"
                           : "text-ink-faint hover:text-ink"
@@ -106,6 +110,7 @@ export default function BlockStatusPanel({
                     </button>
                   );
                 })}
+                {status === "PRONTO" && <button className="min-h-11 rounded-lg border border-line px-3 text-sm text-teal" disabled={pending} onClick={() => changeStatus(block.id, "EM_PROGRESSO")}>↶ Voltar para em produção</button>}
               </div>
             </div>
 
@@ -119,13 +124,14 @@ export default function BlockStatusPanel({
               }
               onBlur={(e) => {
                 if (e.target.value === block.blockNotes) return;
-                start(() => updateBlockNotes(block.id, e.target.value));
+                const value = e.target.value;
+                start(async () => { try { await updateBlockNotes(block.id, value); setNotice("Observação salva."); } catch { setNotice("Observação não salva. Tente novamente."); } });
               }}
               className="mt-2.5 w-full rounded-lg border border-line-soft bg-canvas px-3 py-1.5 text-xs outline-none transition focus:border-teal/40"
             />
           </li>
         );
       })}
-    </ul>
+    </ul></div>
   );
 }
