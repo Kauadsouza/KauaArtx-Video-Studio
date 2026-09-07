@@ -10,7 +10,8 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isEmbedBridge = pathname === "/embed";
   const isHubAuthEndpoint = pathname === "/api/auth/hub";
-  const isPublicPath = isEmbedBridge || isHubAuthEndpoint || pathname === '/api/members' || pathname === '/login';
+  const isPublicAsset = pathname === "/icon.svg" || pathname === "/manifest.webmanifest";
+  const isPublicPath = isEmbedBridge || isHubAuthEndpoint || isPublicAsset || pathname === '/api/members' || pathname === '/login';
 
   if (!isAuthConfigured()) {
     if (isPublicPath) return NextResponse.next();
