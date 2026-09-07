@@ -49,3 +49,10 @@ test('every exported video mutation enforces record ownership', () => {
   const queries = readFileSync(new URL('../src/lib/queries.ts',import.meta.url),'utf8');
   assert.match(queries,/where: \{ ownerId \}/); assert.match(queries,/where: \{ id, ownerId \}/);
 });
+test('member workspaces and owner approvals never expose another account state', () => {
+  const route = readFileSync(new URL('../src/app/api/members/route.ts',import.meta.url),'utf8');
+  assert.match(route,/principal_app: \{ principal, app \}/);
+  assert.match(route,/where: \{ principal, app, revision \}/);
+  assert.match(route,/select: \{ app: true, status: true, memberId: true, updatedAt: true, member: \{ select: \{ username: true, createdAt: true \} \} \}/);
+  assert.doesNotMatch(route,/admin-list[\s\S]{0,500}payload: true/);
+});

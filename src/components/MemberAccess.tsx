@@ -19,6 +19,7 @@ export function MemberAccess({ app, children }: { app: 'videos' | 'study' | 'uni
   const [ready, setReady] = useState(false);
   const [creating, setCreating] = useState(false);
   const [pending, setPending] = useState(false);
+  const [waitingApproval, setWaitingApproval] = useState(false);
   const [message, setMessage] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -37,11 +38,12 @@ export function MemberAccess({ app, children }: { app: 'videos' | 'study' | 'uni
   }, [app]);
   if (!ready) return <main className="account-access"><p>Confirmando seu acesso…</p></main>;
   if (session) return <><div className="account-session"><span>{session.owner ? 'Meu espaço privado' : `Conta: ${session.username ?? session.principal.slice(0,8)}`}</span><button onClick={async () => { try { await accountRequest('logout', app, {}, session.token); sessionStorage.removeItem(`artx-account:${app}`); window.location.reload(); } catch { setMessage('Não foi possível sair. Tente novamente.'); } }}>Sair</button><span role="status">{message}</span></div>{children(session)}</>;
+  if (waitingApproval) return <main className="account-access"><section className="pending-access" role="status"><div className="pending-symbol">✓</div><span>CONTA RECEBIDA</span><h1>Aguardando aprovação.</h1><p>{message || 'Seu pedido está na fila privada do proprietário.'}</p><div className="pending-steps"><strong>O que acontece agora?</strong><p>O proprietário revisa o pedido no ARTX Hub. Depois de aprovado, volte e entre com o mesmo nome e senha.</p></div><button type="button" onClick={() => { setWaitingApproval(false); setMessage(''); }}>Voltar para entrar</button></section></main>;
   return <main className="account-access"><form onSubmit={async event => {
     event.preventDefault(); if (pending) return; setPending(true); setMessage('');
     try {
       const result = await accountRequest(creating ? 'register' : 'login', app, { username, password });
-      if (result.pending) setMessage(result.message);
+      if (result.pending) { setMessage(result.message); setWaitingApproval(true); }
       else { sessionStorage.setItem(`artx-account:${app}`, JSON.stringify(result)); window.location.reload(); }
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Não foi possível entrar.'); }
     finally { setPending(false); setPassword(''); }
