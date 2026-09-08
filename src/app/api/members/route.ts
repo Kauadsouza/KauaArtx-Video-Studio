@@ -30,18 +30,27 @@ export async function POST(request: Request) {
     const token = request.headers.get('authorization')?.replace(/^Bearer /, '') ?? '';
     let result: unknown = { ok: true };
     let cookie: string | undefined;
-    if (action === 'admin-list' || action === 'admin-decide' || action === 'admin-decide-all') {
+    if (action === 'admin-list' || action === 'admin-decide' || action === 'admin-decide-all' || action === 'admin-configure') {
       await requireHubOwner(token);
       if (action === 'admin-list') result = await prisma.memberGrant.findMany({ select: { app: true, status: true, memberId: true, updatedAt: true, member: { select: { username: true, createdAt: true } } }, orderBy: { updatedAt: 'desc' }, take: 500 });
-      else if (action === 'admin-decide-all') {
+      else if (action === 'admin-decide-all' || action === 'admin-configure') {
         const memberId = String(body.memberId ?? '');
-        if (!['approved', 'rejected', 'revoked'].includes(String(body.status))) throw new Error('Decisão inválida.');
         const account = await prisma.memberAccount.findUnique({ where: { id: memberId }, select: { id: true } });
         if (!account) throw new Error('Conta não encontrada.');
-        await prisma.$transaction([
-          prisma.memberGrant.updateMany({ where: { memberId }, data: { status: String(body.status) } }),
-          prisma.memberSession.deleteMany({ where: { principal: memberId } }),
-        ]);
+        if (action === 'admin-decide-all') {
+          if (!['approved', 'rejected', 'revoked'].includes(String(body.status))) throw new Error('Decisão inválida.');
+          await prisma.$transaction([
+            prisma.memberGrant.updateMany({ where: { memberId }, data: { status: String(body.status) } }),
+            prisma.memberSession.deleteMany({ where: { principal: memberId } }),
+          ]);
+        } else {
+          if (!Array.isArray(body.apps) || body.apps.some(app => !MEMBER_WORKSPACES.includes(app as (typeof MEMBER_WORKSPACES)[number]))) throw new Error('Seleção de sistemas inválida.');
+          const selected = new Set(body.apps as string[]);
+          await prisma.$transaction(async tx => {
+            for (const app of APPS) await tx.memberGrant.updateMany({ where: { memberId, app }, data: { status: app === 'hub' || selected.has(app) ? 'approved' : 'revoked' } });
+            await tx.memberSession.deleteMany({ where: { principal: memberId } });
+          });
+        }
       } else {
         const app = memberApp(body.app); const memberId = String(body.memberId ?? '');
         if (!['approved', 'rejected', 'revoked'].includes(String(body.status))) throw new Error('Decisão inválida.');
