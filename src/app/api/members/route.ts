@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { digest, hashPassword, matchesPassword, memberApp, memberIdentity, issueMemberSession, requireHubOwner, throttle, MEMBER_COOKIE } from '@/lib/member-auth';
+import { APPS, MEMBER_WORKSPACES, digest, hashPassword, matchesPassword, memberApp, memberIdentity, issueMemberSession, requireHubOwner, throttle, MEMBER_COOKIE } from '@/lib/member-auth';
 import { AUTH_COOKIE, PARTITIONED_AUTH_COOKIE } from '@/lib/auth';
 
 export const runtime = 'nodejs';
@@ -30,10 +30,19 @@ export async function POST(request: Request) {
     const token = request.headers.get('authorization')?.replace(/^Bearer /, '') ?? '';
     let result: unknown = { ok: true };
     let cookie: string | undefined;
-    if (action === 'admin-list' || action === 'admin-decide') {
+    if (action === 'admin-list' || action === 'admin-decide' || action === 'admin-decide-all') {
       await requireHubOwner(token);
       if (action === 'admin-list') result = await prisma.memberGrant.findMany({ select: { app: true, status: true, memberId: true, updatedAt: true, member: { select: { username: true, createdAt: true } } }, orderBy: { updatedAt: 'desc' }, take: 500 });
-      else {
+      else if (action === 'admin-decide-all') {
+        const memberId = String(body.memberId ?? '');
+        if (!['approved', 'rejected', 'revoked'].includes(String(body.status))) throw new Error('Decisão inválida.');
+        const account = await prisma.memberAccount.findUnique({ where: { id: memberId }, select: { id: true } });
+        if (!account) throw new Error('Conta não encontrada.');
+        await prisma.$transaction([
+          prisma.memberGrant.updateMany({ where: { memberId }, data: { status: String(body.status) } }),
+          prisma.memberSession.deleteMany({ where: { principal: memberId } }),
+        ]);
+      } else {
         const app = memberApp(body.app); const memberId = String(body.memberId ?? '');
         if (!['approved', 'rejected', 'revoked'].includes(String(body.status))) throw new Error('Decisão inválida.');
         await prisma.$transaction(async tx => {
@@ -54,18 +63,35 @@ export async function POST(request: Request) {
       const account = await prisma.memberAccount.findUnique({ where: { username } });
       if (action === 'register') {
         if (account) throw new Error('Nome indisponível. Se a conta é sua, entre para pedir acesso a este sistema.');
-        await prisma.memberAccount.create({ data: { username, passwordHash: await hashPassword(password), grants: { create: { app, status: 'pending' } } } });
+        const requestedApps = app === 'hub' ? APPS : [app];
+        await prisma.memberAccount.create({ data: { username, passwordHash: await hashPassword(password), grants: { create: requestedApps.map(requestedApp => ({ app: requestedApp, status: 'pending' })) } } });
         result = { pending: true, message: 'Conta criada. Aguarde a aprovação do administrador no Hub.' };
       } else {
         if (!account) { await hashPassword(password); throw new Error('Nome ou senha incorretos.'); }
         if (!await matchesPassword(password, account.passwordHash)) throw new Error('Nome ou senha incorretos.');
+        if (app === 'hub') await prisma.memberGrant.createMany({ data: APPS.map(requestedApp => ({ memberId: account.id, app: requestedApp })), skipDuplicates: true });
         const grant = await prisma.memberGrant.upsert({ where: { memberId_app: { memberId: account.id, app } }, create: { memberId: account.id, app }, update: {} });
         if (grant.status !== 'approved') result = { pending: true, message: grant.status === 'pending' ? 'Aguardando aprovação no Hub.' : 'Acesso não autorizado. Fale com o administrador.' };
-        else { const session = await issueMemberSession(account.id, app); result = { token: session, principal: account.id, username: account.username, owner: false }; if (app === 'videos') cookie = session; }
+        else {
+          const session = await issueMemberSession(account.id, app);
+          const appTokens: Partial<Record<(typeof MEMBER_WORKSPACES)[number], string>> = {};
+          if (app === 'hub') {
+            const grants = await prisma.memberGrant.findMany({ where: { memberId: account.id, app: { in: [...MEMBER_WORKSPACES] }, status: 'approved' }, select: { app: true } });
+            for (const approved of grants) {
+              const approvedApp = memberApp(approved.app);
+              if (approvedApp !== 'hub') appTokens[approvedApp] = await issueMemberSession(account.id, approvedApp);
+            }
+          }
+          result = { token: session, principal: account.id, username: account.username, owner: false, ...(app === 'hub' ? { appTokens } : {}) };
+          if (app === 'videos') cookie = session;
+        }
       }
     } else {
       const app = memberApp(body.app); const principal = await memberIdentity(token, app);
-      if (action === 'session') result = { principal, owner: principal === 'owner' };
+      if (action === 'session') {
+        const account = principal === 'owner' ? null : await prisma.memberAccount.findUnique({ where: { id: principal }, select: { username: true } });
+        result = { principal, owner: principal === 'owner', ...(account ? { username: account.username } : {}) };
+      }
       else if (action === 'logout') { await prisma.memberSession.deleteMany({ where: { digest: digest(token) } }); }
       else if (action === 'load') result = await prisma.memberState.findUnique({ where: { principal_app: { principal, app } }, select: { payload: true, revision: true } });
       else if (action === 'save') {

@@ -5,7 +5,8 @@ import { prisma } from './prisma';
 
 const scrypt = promisify(derive);
 export const MEMBER_COOKIE = 'artx_member';
-export const APPS = ['videos', 'study', 'university'] as const;
+export const APPS = ['hub', 'videos', 'study', 'university'] as const;
+export const MEMBER_WORKSPACES = ['videos', 'study', 'university'] as const;
 export type MemberApp = (typeof APPS)[number];
 export function memberApp(value: unknown): MemberApp {
   if (!APPS.includes(value as MemberApp)) throw new Error('Aplicativo inválido.');

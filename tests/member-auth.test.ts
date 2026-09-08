@@ -12,7 +12,7 @@ test('passwords are salted, non-reversible hashes and compare correctly', async 
   assert.equal(await matchesPassword('incorrect-password', first), false);
 });
 test('invalid app identifiers never select a workspace', () => {
-  assert.throws(() => memberApp('hub')); assert.throws(() => memberApp('owner')); assert.equal(memberApp('study'), 'study');
+  assert.equal(memberApp('hub'), 'hub'); assert.throws(() => memberApp('owner')); assert.equal(memberApp('study'), 'study');
 });
 test('session identity rejects missing tokens, expired and cross-app sessions; approval is rechecked', async () => {
   const originalSession = prisma.memberSession.findUnique; const originalGrant = prisma.memberGrant.findUnique;
