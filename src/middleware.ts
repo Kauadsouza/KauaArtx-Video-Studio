@@ -10,6 +10,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isEmbedBridge = pathname === "/embed";
   const isHubAuthEndpoint = pathname === "/api/auth/hub";
+  const isTopLevelNavigation = request.headers.get("sec-fetch-dest") === "document";
   const isPublicAsset = pathname === "/icon.svg" || pathname === "/manifest.webmanifest";
   const isPublicPath = isEmbedBridge || isHubAuthEndpoint || isPublicAsset || pathname === '/api/members' || pathname === '/login';
 
@@ -22,11 +23,16 @@ export async function middleware(request: NextRequest) {
   // Member identity/approval is verified again at every server data boundary.
   const authenticated = await verifySessionToken(token) || /^[a-f0-9]{64}$/.test(request.cookies.get('artx_member')?.value ?? '');
 
+  // Acesso direto abre Entrar/Criar conta; somente o iframe do Hub usa a ponte.
+  if (!authenticated && isEmbedBridge && isTopLevelNavigation) {
+    return NextResponse.redirect(new URL("/login", request.nextUrl.origin));
+  }
+
   if (!authenticated && !isPublicPath) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Sessão do Hub necessária." }, { status: 401 });
     }
-    const response = NextResponse.redirect(new URL("/embed", request.nextUrl.origin));
+    const response = NextResponse.redirect(new URL(isTopLevelNavigation ? "/login" : "/embed", request.nextUrl.origin));
     if (token) {
       response.cookies.delete(AUTH_COOKIE);
       response.cookies.delete(PARTITIONED_AUTH_COOKIE);
