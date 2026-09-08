@@ -29,8 +29,17 @@ export function MemberAccess({ app, children }: { app: 'videos' | 'study' | 'uni
     if (saved?.token) void accountRequest('session', app, {}, saved.token).then(result => { if (active) { const verified = { ...saved, ...result }; sessionStorage.setItem(`artx-account:${app}`, JSON.stringify(verified)); setSession(verified); } }).catch(() => { if (active) { sessionStorage.removeItem(`artx-account:${app}`); setMessage('Entre novamente para continuar.'); } }).finally(() => { if (active) setReady(true); });
     else queueMicrotask(() => { if (active) setReady(true); });
     async function receive(event: MessageEvent) {
-      if (event.origin !== 'https://artx-hub.vercel.app' || event.source !== window.parent || event.data?.type !== 'ARTX_HUB_AUTH' || typeof event.data.accessToken !== 'string') return;
-      try { const verified = await accountRequest('owner', app, {}, event.data.accessToken); if (active) { sessionStorage.setItem(`artx-account:${app}`, JSON.stringify(verified)); setSession(verified); setReady(true); } } catch { if (active) setMessage('Não foi possível confirmar seu acesso pelo Hub.'); }
+      if (event.origin !== 'https://artx-hub.vercel.app' || event.source !== window.parent) return;
+      try {
+        if (event.data?.type === 'ARTX_HUB_AUTH' && typeof event.data.accessToken === 'string') {
+          const verified = await accountRequest('owner', app, {}, event.data.accessToken);
+          if (active) { sessionStorage.setItem(`artx-account:${app}`, JSON.stringify(verified)); setSession(verified); setReady(true); }
+        } else if (event.data?.type === 'ARTX_MEMBER_AUTH' && typeof event.data.token === 'string') {
+          const verified = await accountRequest('session', app, {}, event.data.token);
+          if (verified.owner) throw new Error('Sessão inválida.');
+          if (active) { const member = { ...verified, token: event.data.token }; sessionStorage.setItem(`artx-account:${app}`, JSON.stringify(member)); setSession(member); setReady(true); }
+        }
+      } catch { if (active) setMessage('Não foi possível confirmar seu acesso pelo Hub.'); }
     }
     window.addEventListener('message', receive);
     if (window.parent !== window) window.parent.postMessage({ type: app === 'study' ? 'ARTX_STUDY_EMBED_READY' : app === 'university' ? 'UNIVERSITY_PATH_EMBED_READY' : 'ARTX_VIDEO_EMBED_READY' }, 'https://artx-hub.vercel.app');
