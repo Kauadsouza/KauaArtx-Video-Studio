@@ -11,9 +11,11 @@ const hubOrigins = [
 export default function HubAccessBridge() {
   const { t } = useI18n();
   const [status, setStatus] = useState("Confirmando acesso pelo ARTX Hub...");
+  const [standalone, setStandalone] = useState(false);
 
   useEffect(() => {
     if (window.parent === window) {
+      setStandalone(true);
       setStatus("Abra este sistema pelo ARTX Hub para acessar sua produção de vídeos.");
       return;
     }
@@ -53,7 +55,9 @@ export default function HubAccessBridge() {
       <img className="mx-auto mb-4 h-12 w-12 rounded-xl" src="/icon.svg" alt="" />
       <p className="text-xs font-semibold tracking-[0.16em] text-teal">ARTX HUB</p>
       <h1 className="mt-2 text-lg font-semibold text-ink">KauaArtx Video Studio</h1>
-      <p className="mt-2 text-sm leading-6 text-ink-dim">{t(status)}</p><div className="mt-5"><LanguageSwitch /></div>
+      <p className="mt-2 text-sm leading-6 text-ink-dim">{t(status)}</p>
+      {standalone && <a className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-teal px-5 py-3 text-sm font-semibold text-abyss" href="/login">Entrar ou criar conta</a>}
+      <div className="mt-5"><LanguageSwitch /></div>
     </div>
   </main>;
 }
