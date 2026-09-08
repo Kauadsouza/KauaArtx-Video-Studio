@@ -14,6 +14,11 @@ test('passwords are salted, non-reversible hashes and compare correctly', async 
 test('invalid app identifiers never select a workspace', () => {
   assert.equal(memberApp('hub'), 'hub'); assert.throws(() => memberApp('owner')); assert.equal(memberApp('study'), 'study');
 });
+test('database constraints include the Hub member workspace', () => {
+  const migration = readFileSync(new URL('../prisma/migrations/20260908012000_hub_member_access/migration.sql', import.meta.url), 'utf8');
+  assert.match(migration, /MemberGrant_app_check[\s\S]*'hub'/);
+  assert.match(migration, /MemberSession_app_check[\s\S]*'hub'/);
+});
 test('session identity rejects missing tokens, expired and cross-app sessions; approval is rechecked', async () => {
   const originalSession = prisma.memberSession.findUnique; const originalGrant = prisma.memberGrant.findUnique;
   const token = 'a'.repeat(64);
