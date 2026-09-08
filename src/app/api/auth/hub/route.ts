@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { AUTH_COOKIE, SESSION_TTL_MS, isAuthConfigured, issueSessionToken } from "@/lib/auth";
+import { AUTH_COOKIE, PARTITIONED_AUTH_COOKIE, SESSION_TTL_MS, isAuthConfigured, issueSessionToken } from "@/lib/auth";
 
 type HubUser = { email?: string };
 
@@ -80,5 +80,15 @@ export async function POST(request: Request) {
     path: "/",
     maxAge: Math.floor(SESSION_TTL_MS / 1000),
   });
+  if (process.env.NODE_ENV === "production") {
+    response.cookies.set(PARTITIONED_AUTH_COOKIE, sessionToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      partitioned: true,
+      path: "/",
+      maxAge: Math.floor(SESSION_TTL_MS / 1000),
+    });
+  }
   return response;
 }

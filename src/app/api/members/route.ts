@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { digest, hashPassword, matchesPassword, memberApp, memberIdentity, issueMemberSession, requireHubOwner, throttle, MEMBER_COOKIE } from '@/lib/member-auth';
+import { AUTH_COOKIE, PARTITIONED_AUTH_COOKIE } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 const allowed = new Set(['https://artx-hub.vercel.app', 'https://sat-simulado.vercel.app', 'https://university-path-six.vercel.app', 'https://sistema-videos.vercel.app']);
@@ -80,7 +81,8 @@ export async function POST(request: Request) {
     }
     const response = NextResponse.json(result, { headers: responseHeaders });
     if (cookie) {
-      response.cookies.delete('kx_session');
+      response.cookies.delete(AUTH_COOKIE);
+      response.cookies.delete(PARTITIONED_AUTH_COOKIE);
       response.cookies.set(MEMBER_COOKIE, cookie, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: 86400 });
     }
     return response;

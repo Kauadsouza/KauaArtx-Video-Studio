@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { AUTH_COOKIE, verifySessionToken } from "./auth";
+import { AUTH_COOKIE, PARTITIONED_AUTH_COOKIE, verifySessionToken } from "./auth";
 import { MEMBER_COOKIE, memberIdentity } from './member-auth';
 import { prisma } from './prisma';
 
@@ -9,7 +9,7 @@ export async function requireSession() {
   const store = await cookies();
   const memberToken = store.get(MEMBER_COOKIE)?.value;
   if (memberToken) return memberIdentity(memberToken, 'videos');
-  if (await verifySessionToken(store.get(AUTH_COOKIE)?.value)) return 'owner';
+  if (await verifySessionToken(store.get(AUTH_COOKIE)?.value ?? store.get(PARTITIONED_AUTH_COOKIE)?.value)) return 'owner';
   throw new Error("Sessão expirada. Entre novamente.");
 }
 

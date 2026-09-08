@@ -13,6 +13,8 @@
  */
 
 export const AUTH_COOKIE = "kx_session";
+/** Sessão isolada por site superior para Safari/CHIPS quando o Studio roda no Hub. */
+export const PARTITIONED_AUTH_COOKIE = "kx_session_hub";
 
 /** Duração da sessão: 7 dias. */
 export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
