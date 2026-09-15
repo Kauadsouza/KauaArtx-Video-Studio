@@ -12,6 +12,7 @@ import {
   type BlockStatus,
   type Stage,
 } from "@/lib/stages";
+import { cascadeTimeline, changedBlocks } from "@/lib/timeline";
 
 /**
  * Todas as mutações do sistema vivem aqui, como Server Actions.
@@ -343,18 +344,37 @@ export async function updateScriptBlock(
   data: { startSeconds?: number; endSeconds?: number; content?: string },
 ) {
   await requireBlock(blockId);
-  await prisma.scriptBlock.update({
-    where: { id: blockId },
-    data: {
-      ...(data.startSeconds !== undefined
-        ? { startSeconds: Math.max(0, Math.floor(data.startSeconds)) }
-        : {}),
-      ...(data.endSeconds !== undefined
-        ? { endSeconds: Math.max(0, Math.floor(data.endSeconds)) }
-        : {}),
-      ...(data.content !== undefined ? { content: data.content } : {}),
-    },
+  const touchesTime = data.startSeconds !== undefined || data.endSeconds !== undefined;
+
+  if (!touchesTime) {
+    if (data.content !== undefined) {
+      await prisma.scriptBlock.update({ where: { id: blockId }, data: { content: data.content } });
+      refresh();
+    }
+    return;
+  }
+
+  // Mexer num tempo move a fronteira e empurra os blocos seguintes, então a
+  // edição inteira é resolvida junto — nunca bloco por bloco.
+  const edited = await prisma.scriptBlock.findUniqueOrThrow({ where: { id: blockId }, select: { videoId: true } });
+  const siblings = await prisma.scriptBlock.findMany({
+    where: { videoId: edited.videoId },
+    select: { id: true, startSeconds: true, endSeconds: true, order: true },
+    orderBy: { order: "asc" },
   });
+
+  const cascaded = cascadeTimeline(siblings, blockId, data);
+  const updates = changedBlocks(siblings, cascaded);
+
+  await prisma.$transaction([
+    ...updates.map(block => prisma.scriptBlock.update({
+      where: { id: block.id },
+      data: { startSeconds: block.startSeconds, endSeconds: block.endSeconds },
+    })),
+    ...(data.content !== undefined
+      ? [prisma.scriptBlock.update({ where: { id: blockId }, data: { content: data.content } })]
+      : []),
+  ]);
   refresh();
 }
 

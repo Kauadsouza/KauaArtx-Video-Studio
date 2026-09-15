@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   addScriptBlock,
   deleteScriptBlock,
@@ -10,7 +10,39 @@ import {
 import { formatSeconds } from "@/lib/stages";
 import type { ScriptBlockDTO } from "@/lib/types";
 import AiButton from "./AiButton";
+import Teleprompter from "./Teleprompter";
 import { useI18n } from "./I18n";
+
+/**
+ * Campo de tempo controlado: quando a cascata muda os blocos seguintes, o
+ * valor exibido acompanha o servidor em vez de congelar no que foi digitado.
+ */
+function TimeInput({ value, label, onCommit }: { value: number; label: string; onCommit: (seconds: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => { setDraft(String(value)); }, [value]);
+
+  function commit() {
+    const parsed = Number(draft);
+    if (!Number.isFinite(parsed) || parsed === value) { setDraft(String(value)); return; }
+    onCommit(parsed);
+  }
+
+  return (
+    <input
+      type="number"
+      min={0}
+      value={draft}
+      aria-label={label}
+      onChange={event => setDraft(event.target.value)}
+      onBlur={commit}
+      onKeyDown={event => {
+        if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); }
+        if (event.key === "Escape") setDraft(String(value));
+      }}
+      className="w-14 rounded border border-line bg-surface px-1.5 py-0.5 text-center outline-none focus:border-teal/50"
+    />
+  );
+}
 
 /**
  * O editor de roteiro "mastigado": o vídeo vira uma lista de blocos de tempo
@@ -43,6 +75,7 @@ export default function ScriptBlockEditor({
           </span>
         )}
         <div className="ml-auto flex items-center gap-2">
+          <Teleprompter blocks={blocks} title={videoTitle} />
           <AiButton
             field="script"
             context={{ videoId, title: videoTitle, blocks }}
@@ -57,6 +90,8 @@ export default function ScriptBlockEditor({
       {blocks.length === 0 ? (
         <p className="rounded-lg border border-dashed border-line-soft px-3 py-6 text-center text-xs text-ink-faint">{t(" Nenhum bloco ainda. Quebre o vídeo em pedaços de tempo — comece pelo gancho de 0 a 15s. ")}</p>
       ) : (
+        <>
+        <p className="mb-2 text-[11px] text-ink-faint">{t("Os blocos formam uma linha do tempo contínua: mudou o fim de um, o próximo começa ali e os seguintes acompanham, mantendo a duração de cada um.")}</p>
         <ul className="space-y-2">
           {blocks.map((block, index) => (
             <li
@@ -69,32 +104,20 @@ export default function ScriptBlockEditor({
                 </span>
 
                 <div className="flex items-center gap-1 font-mono text-xs">
-                  <input
-                    type="number"
-                    min={0}
-                    defaultValue={block.startSeconds}
-                    onBlur={(e) =>
-                      startTransition(() =>
-                        updateScriptBlock(block.id, {
-                          startSeconds: Number(e.target.value),
-                        }),
-                      )
+                  <TimeInput
+                    value={block.startSeconds}
+                    label={`${t("Início do bloco")} ${index + 1}`}
+                    onCommit={(startSeconds) =>
+                      startTransition(() => updateScriptBlock(block.id, { startSeconds }))
                     }
-                    className="w-14 rounded border border-line bg-surface px-1.5 py-0.5 text-center outline-none focus:border-teal/50"
                   />
                   <span className="text-ink-faint">–</span>
-                  <input
-                    type="number"
-                    min={0}
-                    defaultValue={block.endSeconds}
-                    onBlur={(e) =>
-                      startTransition(() =>
-                        updateScriptBlock(block.id, {
-                          endSeconds: Number(e.target.value),
-                        }),
-                      )
+                  <TimeInput
+                    value={block.endSeconds}
+                    label={`${t("Fim do bloco")} ${index + 1}`}
+                    onCommit={(endSeconds) =>
+                      startTransition(() => updateScriptBlock(block.id, { endSeconds }))
                     }
-                    className="w-14 rounded border border-line bg-surface px-1.5 py-0.5 text-center outline-none focus:border-teal/50"
                   />
                   <span className="text-ink-faint">s</span>
                 </div>
@@ -149,6 +172,7 @@ export default function ScriptBlockEditor({
             </li>
           ))}
         </ul>
+        </>
       )}
     </section>
   );

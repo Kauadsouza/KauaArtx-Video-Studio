@@ -6,6 +6,7 @@ import { formatSeconds, type Stage } from "@/lib/stages";
 import { blockProgress, type VideoDTO } from "@/lib/types";
 import ScriptBlockEditor from "@/components/ScriptBlockEditor";
 import AiButton from "@/components/AiButton";
+import Teleprompter from "@/components/Teleprompter";
 import BlockStatusPanel from "./BlockStatusPanel";
 import { SectionTitle, TextField } from "./Field";
 import { safeVideoUrl } from "@/lib/safe-url";
@@ -135,7 +136,10 @@ function PainelGravacao({ video }: { video: VideoDTO }) {
 
   return (
     <div className="space-y-5">
-      <SectionTitle hint={`${done} de ${total} blocos gravados`}>{t(" Lista de gravação ")}</SectionTitle>
+      <SectionTitle
+        hint={`${done} de ${total} blocos gravados`}
+        action={<Teleprompter blocks={video.scriptBlocks} title={video.title} />}
+      >{t(" Lista de gravação ")}</SectionTitle>
       <BlockStatusPanel blocks={video.scriptBlocks} kind="recording" />
       <TextField
         videoId={video.id}
