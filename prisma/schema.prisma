@@ -75,6 +75,17 @@ model Video {
   videoUrl       String   @default("")
   learnings      String   @default("")
 
+  // --- Desempenho, lido da API pública do YouTube -------------------------
+  /// Id de 11 caracteres extraído de videoUrl na última sincronização.
+  youtubeId      String    @default("")
+  views          Int?
+  likes          Int?
+  comments       Int?
+  /// Publicação real no YouTube (publishAt acima é a data que você planejou).
+  publishedAt    DateTime?
+  /// Quando os números acima foram lidos pela última vez.
+  metricsAt      DateTime?
+
   scriptBlocks   ScriptBlock[]
   checklistItems ChecklistItem[]
 

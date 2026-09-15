@@ -42,6 +42,13 @@ function toDTO(v: Row): VideoDTO {
     videoUrl: v.videoUrl,
     learnings: v.learnings,
 
+    youtubeId: v.youtubeId,
+    views: v.views,
+    likes: v.likes,
+    comments: v.comments,
+    publishedAt: v.publishedAt ? v.publishedAt.toISOString() : null,
+    metricsAt: v.metricsAt ? v.metricsAt.toISOString() : null,
+
     scriptBlocks: v.scriptBlocks.map((b) => ({
       id: b.id,
       startSeconds: b.startSeconds,

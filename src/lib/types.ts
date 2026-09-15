@@ -47,6 +47,13 @@ export type VideoDTO = {
   videoUrl: string;
   learnings: string;
 
+  youtubeId: string;
+  views: number | null;
+  likes: number | null;
+  comments: number | null;
+  publishedAt: string | null;
+  metricsAt: string | null;
+
   scriptBlocks: ScriptBlockDTO[];
   checklistItems: ChecklistItemDTO[];
 };

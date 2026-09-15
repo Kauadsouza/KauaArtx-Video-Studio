@@ -50,8 +50,25 @@ function localSuggestion(field: string, ctx: Record<string, string>): string {
   ].join("\n\n");
 }
 
+/**
+ * O que já foi publicado e medido vira contexto para a próxima sugestão.
+ * Só entra com pelo menos dois vídeos medidos: um número sozinho não é padrão.
+ */
+async function performanceEvidence(ownerId: string): Promise<string> {
+  const top = await prisma.video.findMany({
+    where: { ownerId, stage: "POSTADO", views: { not: null } },
+    orderBy: { views: "desc" },
+    take: 3,
+    select: { title: true, finalTitle: true, views: true },
+  });
+  if (top.length < 2) return "";
+  const lines = top.map(video => `- "${(video.finalTitle.trim() || video.title).slice(0, 120)}" — ${video.views} visualizações`).join("\n");
+  return `\n\nTítulos deste canal que mais performaram até agora, segundo os números reais do YouTube:\n${lines}\n\nObserve o que esses títulos têm em comum e aplique o mesmo padrão, sem repetir as mesmas palavras.`;
+}
+
 export async function POST(request: Request) {
-  try { await requireSession(); } catch { return NextResponse.json({ error: "Sessão expirada. Entre pelo Hub." }, { status: 401 }); }
+  let ownerId: string;
+  try { ownerId = await requireSession(); } catch { return NextResponse.json({ error: "Sessão expirada. Entre pelo Hub." }, { status: 401 }); }
 
   const declaredLength = Number(request.headers.get("content-length") ?? "0");
   if (declaredLength > MAX_BODY_BYTES) return NextResponse.json({ error: "Pedido maior que 64 KB." }, { status: 413 });
@@ -74,6 +91,8 @@ export async function POST(request: Request) {
   const fallback = () => NextResponse.json({ text: localSuggestion(body.field as string, context), mode: "local" }, { headers: { "Cache-Control": "no-store" } });
   if (!baseUrl || !apiKey || !model) return fallback();
 
+  const evidence = body.field === "title" || body.field === "thumbnail" ? await performanceEvidence(ownerId) : "";
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 45_000);
   try {
@@ -86,7 +105,7 @@ export async function POST(request: Request) {
         max_tokens: 2000,
         messages: [
           { role: "system", content: "Você é o assistente editorial privado do canal @KauaArtx. Kauã mora em Oxford e cria conteúdo sobre viagens, histórias reais e evolução pessoal. Use somente fatos fornecidos no pedido." },
-          { role: "user", content: PROMPTS[body.field](context) },
+          { role: "user", content: PROMPTS[body.field](context) + evidence },
         ],
       }),
       signal: controller.signal,

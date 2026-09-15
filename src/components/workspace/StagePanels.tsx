@@ -6,6 +6,7 @@ import { formatSeconds, type Stage } from "@/lib/stages";
 import { blockProgress, type VideoDTO } from "@/lib/types";
 import ScriptBlockEditor from "@/components/ScriptBlockEditor";
 import AiButton from "@/components/AiButton";
+import { VideoNumbers } from "@/components/Performance";
 import BlockStatusPanel from "./BlockStatusPanel";
 import { SectionTitle, TextField } from "./Field";
 import { safeVideoUrl } from "@/lib/safe-url";
@@ -358,6 +359,8 @@ function PainelPostado({ video }: { video: VideoDTO }) {
           className="inline-flex items-center gap-1.5 rounded-lg bg-teal/12 px-3 py-2 text-sm font-medium text-teal transition hover:bg-teal/20"
         >{t(" Abrir no YouTube ↗ ")}</a>
       )}
+
+      <VideoNumbers video={video} />
 
       <TextField
         videoId={video.id}
