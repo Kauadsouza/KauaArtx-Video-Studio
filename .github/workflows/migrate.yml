@@ -1,0 +1,74 @@
+name: Migrar banco
+
+# O deploy da Vercel roda "prisma generate && next build" e nunca aplica
+# migração. Então um merge que muda o schema sobe com o banco antigo e toda
+# consulta do quadro estoura "column does not exist" — apagão sem aviso.
+#
+# Este fluxo aplica as migrações pendentes antes de o código novo atender.
+# Enquanto o segredo DATABASE_MIGRATION_URL não existir, ele não falha: avisa
+# o que falta e encerra, para não pintar o histórico de vermelho à toa.
+
+on:
+  push:
+    branches: [main]
+    paths: ['prisma/migrations/**', 'prisma/schema.prisma']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Conferir se o segredo existe
+        id: check
+        env:
+          URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+        run: |
+          if [ -z "$URL" ]; then
+            echo "pronto=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Migração não aplicada"
+              echo ""
+              echo "Falta o segredo \`DATABASE_MIGRATION_URL\` neste repositório."
+              echo ""
+              echo "Use a **connection string direta** do Supabase (porta 5432), não a do pooler:"
+              echo "Settings → Database → Connection string → URI."
+              echo ""
+              echo "Depois de criar o segredo, rode este fluxo pela aba Actions."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "pronto=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - run: npm ci
+        if: steps.check.outputs.pronto == 'true'
+
+      - name: Mostrar o que está pendente
+        if: steps.check.outputs.pronto == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+          DIRECT_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+        run: npx prisma migrate status || true
+
+      - name: Aplicar
+        if: steps.check.outputs.pronto == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+          DIRECT_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+        run: npx prisma migrate deploy
+
+      - name: Registrar no resumo
+        if: steps.check.outputs.pronto == 'true'
+        run: echo "Migrações aplicadas a partir de ${{ github.sha }}." >> "$GITHUB_STEP_SUMMARY"
