@@ -146,3 +146,37 @@ textarea::placeholder {
   .studio-error{margin:10px 14px}
   .studio-hero h1{font-size:34px}
 }
+
+/**
+ * Modo leitura em claro.
+ *
+ * O resto do app é escuro; esta tela não. Ela existe para ser lida em voz alta
+ * enquanto se grava, e texto preto sobre branco é o que se lê sem esforço —
+ * é assim que roteiro impresso e teleprompter de estúdio sempre foram.
+ *
+ * A troca é feita redefinindo as variáveis do tema dentro deste escopo, e não
+ * reescrevendo classe por classe. As utilities do Tailwind v4 compilam para
+ * `var(--color-…)`, então trocar a variável vira a tela inteira de uma vez —
+ * inclusive o que eu esquecesse de olhar.
+ */
+.leitura-clara {
+  --color-abyss: #ffffff;
+  --color-canvas: #ffffff;
+  --color-surface: #f4f6f5;
+  --color-surface-2: #e9eeec;
+  --color-line: #d3dbd7;
+  --color-line-soft: #e4e9e7;
+
+  --color-ink: #0c1412;
+  --color-ink-dim: #3d4c47;
+  --color-ink-faint: #64756e;
+
+  /* O verde claro da paleta escura some no branco: aqui vale o profundo. */
+  --color-teal: #235347;
+  --color-teal-deep: #163832;
+  --color-amber: #9a6510;
+  --color-rose: #b3251c;
+}
+
+/* O texto do roteiro é o conteúdo da tela: preto puro, sem véu. */
+.leitura-clara .leitura-texto { color: #000; }

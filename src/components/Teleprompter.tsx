@@ -82,7 +82,7 @@ function TeleprompterStage({ blocks, title, onClose }: { blocks: ScriptBlockDTO[
       role="dialog"
       aria-modal="true"
       aria-label={t("Modo leitura do roteiro")}
-      className="fixed inset-0 z-50 flex flex-col bg-abyss/98 outline-none backdrop-blur-sm"
+      className="leitura-clara fixed inset-0 z-50 flex flex-col bg-abyss outline-none"
     >
       <header className="flex flex-wrap items-center gap-3 border-b border-line/60 px-5 py-3">
         <span className="text-[11px] tracking-wide text-ink-faint uppercase">{t("Modo leitura")}</span>
@@ -97,7 +97,7 @@ function TeleprompterStage({ blocks, title, onClose }: { blocks: ScriptBlockDTO[
       <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto px-6 py-8 sm:px-16">
         <p
           style={{ fontSize: FONT_STEPS[fontStep], lineHeight: 1.45 }}
-          className="max-w-4xl text-center font-medium whitespace-pre-wrap text-ink"
+          className="leitura-texto max-w-4xl text-center font-medium whitespace-pre-wrap text-ink"
         >
           {block.content.trim() || <span className="text-ink-faint italic">{t("Este bloco ainda está sem texto.")}</span>}
         </p>
