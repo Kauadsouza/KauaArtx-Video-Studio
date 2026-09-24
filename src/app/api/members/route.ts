@@ -47,7 +47,24 @@ export async function POST(request: Request) {
           if (!Array.isArray(body.apps) || body.apps.some(app => !MEMBER_WORKSPACES.includes(app as (typeof MEMBER_WORKSPACES)[number]))) throw new Error('Seleção de sistemas inválida.');
           const selected = new Set(body.apps as string[]);
           await prisma.$transaction(async tx => {
-            for (const app of APPS) await tx.memberGrant.updateMany({ where: { memberId, app }, data: { status: app === 'hub' || selected.has(app) ? 'approved' : 'revoked' } });
+            /*
+              Duas correcoes aqui.
+
+              1. O acesso ao Hub nao e mais concedido de tabela. Antes a linha
+                 dizia `app === 'hub' || selected.has(app)`, entao liberar o
+                 Video para alguem criava junto uma conta no Hub — que e o
+                 painel do dono. Quem pede acesso a um sistema recebe aquele
+                 sistema, e mais nada.
+
+              2. `upsert` no lugar de `updateMany`. O update so mexia em linha
+                 existente, entao marcar um sistema que a pessoa nunca pediu
+                 nao fazia nada: o dono clicava, confirmava, e o acesso nao
+                 aparecia. Agora a concessao e criada quando falta.
+            */
+            for (const app of MEMBER_WORKSPACES) {
+              const status = selected.has(app) ? 'approved' : 'revoked';
+              await tx.memberGrant.upsert({ where: { memberId_app: { memberId, app } }, create: { memberId, app, status }, update: { status } });
+            }
             await tx.memberSession.deleteMany({ where: { principal: memberId } });
           });
         }
