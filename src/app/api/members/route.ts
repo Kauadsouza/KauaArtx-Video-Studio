@@ -4,7 +4,7 @@ import { APPS, MEMBER_WORKSPACES, digest, hashPassword, matchesPassword, memberA
 import { AUTH_COOKIE, PARTITIONED_AUTH_COOKIE } from '@/lib/auth';
 
 export const runtime = 'nodejs';
-const allowed = new Set(['https://artx-hub.vercel.app', 'https://sat-simulado.vercel.app', 'https://university-path-six.vercel.app', 'https://sistema-videos.vercel.app']);
+const allowed = new Set(['https://artx-hub.vercel.app', 'https://sat-simulado.vercel.app', 'https://university-path-six.vercel.app', 'https://sistema-videos.vercel.app', 'https://cursos-artx.vercel.app']);
 function headers(request: Request) {
   const origin = request.headers.get('origin');
   if (origin && origin !== new URL(request.url).origin && !allowed.has(origin)) throw new Error('Origem não permitida.');
