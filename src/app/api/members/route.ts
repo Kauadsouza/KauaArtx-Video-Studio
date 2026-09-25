@@ -97,7 +97,10 @@ export async function POST(request: Request) {
         if (!await matchesPassword(password, account.passwordHash)) throw new Error('Nome ou senha incorretos.');
         if (app === 'hub') await prisma.memberGrant.createMany({ data: APPS.map(requestedApp => ({ memberId: account.id, app: requestedApp })), skipDuplicates: true });
         const grant = await prisma.memberGrant.upsert({ where: { memberId_app: { memberId: account.id, app } }, create: { memberId: account.id, app }, update: {} });
-        if (grant.status !== 'approved') result = { pending: true, message: grant.status === 'pending' ? 'Aguardando aprovação no Hub.' : 'Acesso não autorizado. Fale com o administrador.' };
+        // `pending` sozinho não distingue "ainda não decidiram" de "negaram", e a
+        // tela do outro lado precisa dizer coisas opostas nos dois casos. `state`
+        // carrega essa diferença; `pending` continua para quem já lia só ele.
+        if (grant.status !== 'approved') result = { pending: true, state: grant.status === 'pending' ? 'pending' : 'denied', message: grant.status === 'pending' ? 'Aguardando aprovação no Hub.' : 'Seu acesso a este sistema não está liberado. Fale com o administrador.' };
         else {
           const session = await issueMemberSession(account.id, app);
           const appTokens: Partial<Record<(typeof MEMBER_WORKSPACES)[number], string>> = {};
