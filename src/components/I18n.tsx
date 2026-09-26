@@ -28,16 +28,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
   const t = useCallback(<T,>(text: T, values: unknown[] = []): T => {
     if (typeof text !== "string") return text;
-    return translate(text, language).replace(/\\{(\\d+)\\}/g, (match, index: string) => Number(index) < values.length ? String(values[Number(index)]) : match) as T;
+    // Uma barra só: com duas, o regex procurava uma barra invertida antes da
+    // chave e nenhum "{0}" recebia o valor.
+    return translate(text, language).replace(/\{(\d+)\}/g, (match, index: string) => Number(index) < values.length ? String(values[Number(index)]) : match) as T;
   }, [language]);
-  useEffect(() => {
-    function receive(event: MessageEvent) {
-      if (event.source !== window.parent || event.origin !== "https://artx-hub.vercel.app" || event.data?.type !== "ARTX_HUB_LANGUAGE" || !["pt", "en"].includes(event.data.language)) return;
-      setLanguage(event.data.language);
-    }
-    window.addEventListener("message", receive);
-    return () => window.removeEventListener("message", receive);
-  }, [setLanguage]);
+  // O idioma é escolhido no botão deste sistema: trocar o do Hub não muda este.
   useEffect(() => { document.documentElement.lang = language === "en" ? "en" : "pt-BR"; }, [language]);
   const value = useMemo(() => ({ language, locale: language === "en" ? "en-GB" : "pt-BR", t, setLanguage }), [language, t, setLanguage]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
