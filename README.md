@@ -44,6 +44,7 @@ Two features come out of that:
 - **Passwords never reversible.** Scrypt hashing with a per-account salt, constant-time comparison and attempt throttling.
 - **The AI credential stays on the server.** The endpoint validates the session, bounds the request size and caps generations per hour.
 - **Migrations applied by CI.** The Vercel deploy does not run migrations; a dedicated workflow applies what is pending when the schema changes, so new code never meets an old database.
+- **Functions next to the data.** Vercel Functions are pinned to `pdx1` (Portland) in `vercel.json`, the same region as the Supabase database; the default Washington region added a cross-country round trip to every query.
 
 ## Tech stack
 
