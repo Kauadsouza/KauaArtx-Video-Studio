@@ -24,3 +24,7 @@ playwright-report/
 next-env.d.ts
 
 .vercel
+
+# Nenhum arquivo de ambiente sobe, só o exemplo: é neles que moram senhas e chaves.
+.env*
+!.env.example

@@ -10,9 +10,22 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isEmbedBridge = pathname === "/embed";
   const isHubAuthEndpoint = pathname === "/api/auth/hub";
+  // O login de membro: quem chama ainda não tem cookie — é esta rota que o cria,
+  // depois de conferir o token no serviço de contas.
+  const isMemberSessionEndpoint = pathname === "/api/sessao";
   const isTopLevelNavigation = request.headers.get("sec-fetch-dest") === "document";
   const isPublicAsset = pathname === "/icon.svg" || pathname === "/manifest.webmanifest";
-  const isPublicPath = isEmbedBridge || isHubAuthEndpoint || isPublicAsset || pathname === '/api/members' || pathname === '/login';
+  const isPublicPath = isEmbedBridge || isHubAuthEndpoint || isMemberSessionEndpoint || isPublicAsset || pathname === '/login';
+
+  /* Pedido que escreve, vindo de outro site, para aqui. O cookie do dono é
+     SameSite=None — precisa ser, para funcionar dentro do Hub —, então sem
+     esta barreira qualquer página poderia disparar pedidos em nome dele. As
+     ações de servidor do Next já conferem a origem sozinhas; as rotas de API
+     não. */
+  const origin = request.headers.get("origin");
+  if (pathname.startsWith("/api/") && request.method !== "GET" && request.method !== "HEAD" && origin && origin !== request.nextUrl.origin) {
+    return NextResponse.json({ error: "Origem não permitida." }, { status: 403 });
+  }
 
   if (!isAuthConfigured()) {
     if (isPublicPath) return NextResponse.next();

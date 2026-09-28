@@ -17,7 +17,9 @@ export const AUTH_COOKIE = "kx_session";
 export const PARTITIONED_AUTH_COOKIE = "kx_session_hub";
 
 /** Duração da sessão: 7 dias. */
-export const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+// Um dia, como as sessões de membro. O Hub renova o cookie sempre que abre este
+// sistema, e um cookie roubado deixa de valer em horas, não em uma semana.
+export const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 function toHex(buffer: ArrayBuffer): string {
   return Array.from(new Uint8Array(buffer))
